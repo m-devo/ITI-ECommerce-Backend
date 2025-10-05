@@ -18,5 +18,14 @@
   "bugs": {
     "url": "https://github.com/m-devo/ITI-ECommerce-Backend/issues"
   },
-  "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme"
+  "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.0",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.10",
+    "validator": "^13.15.15"
+  }
 }
