@@ -1,0 +1,23 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The auto-generated id of the user
+          example: '60564fcb54425c6a18d1d4d5'
+        name:
+          type: string
+          example: 'User Name'
+        email:
+          type: string
+          example: 'user@example.com'
+        role:
+          type: string
+          enum: [user, admin, author]
+          example: 'user'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2025-10-05T14:48:00.000Z'

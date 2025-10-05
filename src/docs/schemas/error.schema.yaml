@@ -1,0 +1,11 @@
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: A message describing the error.
+        stack:
+          type: string
+          description: The error stack trace (only in development).
