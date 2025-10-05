@@ -1,0 +1,22 @@
+{
+  "name": "iti-ecommerce-backend",
+  "version": "1.0.0",
+  "description": "This is a backend project for ITI using NodeJS.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "run:dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-devo/ITI-ECommerce-Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/m-devo/ITI-ECommerce-Backend/issues"
+  },
+  "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme"
+}
