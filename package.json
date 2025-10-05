@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This is a backend project for ITI using NodeJS.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "run:dev": "nodemon index.js"
@@ -14,7 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/m-devo/ITI-ECommerce-Backend/issues"
   },
