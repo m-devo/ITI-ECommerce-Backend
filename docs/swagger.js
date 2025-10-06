@@ -10,8 +10,8 @@ const options = {
     },
     // Path to the API docs
     apis: [
-        './src/docs/paths/*.yaml', 
-        './src/docs/schemas/*.yaml'
+        './docs/paths/*.yaml', 
+        './docs/schemas/*.yaml'
     ],
 };
 

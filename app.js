@@ -6,10 +6,10 @@ import errorHandler from './src/middlewares/error.middleware.js';
 import userRoutes from './src/routes/user.routes.js';
 // import authRouter from "./src/routes/auth.route.js";
 import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './src/docs/swagger.js';
+import { swaggerSpec } from './docs/swagger.js';
 
 const app = express();
-const PORT = process.env.PORT || 8080; 
+const PORT = process.env.PORT || 4000; 
 
 connectDB();
 
@@ -18,10 +18,10 @@ app.use(express.json());
 app.use(errorHandler);
 
 // auth routes
-// app.use('/api/v1/auth', authRouter);
+// app.use('/api/auth', authRouter);
 
 // #todo check is admin middleware
-app.use('/api/v1/admin/users', userRoutes);
+app.use('/api/admin/users', userRoutes);
 
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
