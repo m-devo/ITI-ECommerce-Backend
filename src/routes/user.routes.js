@@ -1,18 +1,22 @@
-import { Router } from 'express';
-import { UserController } from '../api/v1/admin/users/user.controller.js';
-// import { objectId } from '../../validations/objectId.validation.js';
-// import { validate } from '../middlewares/validate.middleware.js';
+import express from "express";
+import {
+  getUsers,
+  registerUser,
+  loginUser,
+  verifyEmail,
+} from "../controller/authController.js";
+import { verifyToken } from "../middleware/auth.middleware.js";
 
-const router = Router();
+const userRouter = express.Router();
 
-router.get('/', UserController.getAllUsers);
+// User routes
+// get all users
+userRouter.get("/api/users", verifyToken, getUsers);
+// register a new user
+userRouter.post("/api/users/register", registerUser);
+// login user
+userRouter.post("/api/users/login", loginUser);
+// verify email
+userRouter.get("/api/users/verify/:token", verifyEmail);
 
-
-router.get(
-    '/:id',
-    // validate(objectId), 
-    UserController.getUserById
-);
-
-
-export default router;
+export default userRouter;
