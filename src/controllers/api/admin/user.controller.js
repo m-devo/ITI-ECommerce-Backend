@@ -1,6 +1,6 @@
-import { UserService } from '../../../../services/user.service.js';
-import catchAsync from '../../../../utils/catchAsync.js';
-import ApiResponse from '../../../../utils/ApiResponse.js';
+import { UserService } from '../../../services/user.service.js';
+import catchAsync from '../../../utils/catchAsync.js';
+import ApiResponse from '../../../utils/ApiResponse.js';
 
 export const UserController = {
 

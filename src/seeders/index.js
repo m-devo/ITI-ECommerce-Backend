@@ -4,7 +4,7 @@ import { seedStaticUsers } from './staticUsers.seeder.js';
 
 const runSeeders = async () => {
   try {
-    await mongoose.connect(process.env.DB_HOST);
+    await mongoose.connect(process.env.MONGO_URL);
     console.log('Database connected for seeding.');
     
     // Run the static users seeder

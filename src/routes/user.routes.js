@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { UserController } from '../api/v1/admin/users/user.controller.js';
+import { UserController } from '../controllers/api/admin/user.controller.js';
 // import { objectId } from '../../validations/objectId.validation.js';
 // import { validate } from '../middlewares/validate.middleware.js';
 
