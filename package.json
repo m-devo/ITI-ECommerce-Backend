@@ -9,9 +9,6 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "migrate:create": "migrate-mongo create",
-    "migrate:up": "migrate-mongo up",
-    "migrate:down": "migrate-mongo down",
-    "migrate:status": "migrate-mongo status",
     "db:seed": "node src/seeders/index.js"
   },
   "repository": {
