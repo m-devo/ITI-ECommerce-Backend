@@ -1,23 +1,26 @@
-import { User } from '../models/user.model.js';
+import { User } from '../models/users.model.js';
 import bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10;
 
 const staticUsers = [
     {
-        name: 'Admin User',
+        firstName: 'Admin',
+        lastName: 'User',
         email: 'admin@example.com',
         password: 'AdminPassword123!',
         role: 'admin',
     },
     {
-        name: 'Author User',
+        firstName: 'Author',
+        lastName: 'User',
         email: 'author@example.com',
         password: 'AuthorPassword123!',
         role: 'author',
     },
     {
-        name: 'Regular User',
+        firstName: 'Regular',
+        lastName: 'User',
         email: 'user@example.com',
         password: 'UserPassword123!',
         role: 'user',

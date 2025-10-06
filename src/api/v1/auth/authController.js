@@ -1,8 +1,8 @@
-import { User } from "../models/users.model.js";
+import { User } from "../../../models/users.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { sendVerificationEmail } from "../utils/sendEmail.js";
+import { sendVerificationEmail } from "../../../utils/sendEmail.js";
 
 const getUsers = async (req, res) => {
   try {
