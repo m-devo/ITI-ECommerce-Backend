@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   verifyEmail,
+  logoutUser,
 } from "../controllers/api/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 
@@ -14,5 +15,7 @@ userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 // verify email
 userRouter.get("/verify/:token", verifyEmail);
+// logout user
+userRouter.post("/logout", verifyToken, logoutUser);
 
 export default userRouter;
