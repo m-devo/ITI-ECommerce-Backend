@@ -4,7 +4,7 @@ import express from 'express';
 import connectDB from './config/db.js';
 import errorHandler from './src/middlewares/error.middleware.js';
 import userRoutes from './src/routes/user.routes.js';
-// import authRouter from "./src/routes/auth.route.js";
+import authRouter from "./src/routes/auth.route.js";
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger.js';
 
@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(errorHandler);
 
 // auth routes
-// app.use('/api/auth', authRouter);
+app.use('/api/auth', authRouter);
 
 // #todo check is admin middleware
 app.use('/api/admin/users', userRoutes);
