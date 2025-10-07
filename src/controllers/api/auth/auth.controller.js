@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendVerificationEmail } from "../../../utils/sendEmail.js";
 
-
 // register a new user
 const registerUser = async (req, res) => {
   console.log(req);
@@ -83,11 +82,27 @@ const loginUser = async (req, res) => {
       message: "Please verify your email before logging in",
     });
   }
+
+  // Check if the user has an active session
+  if (user.activeSessionToken) {
+    return res.status(409).json({
+      status: "error",
+      message:
+        "You are already logged in from another device. Please logout from the other device first.",
+    });
+  }
+
+  // Generate new token
   const token = jwt.sign(
     { email: user.email, id: user._id, role: user.role },
     process.env.JWT_SECRET_KEY,
     { expiresIn: "1h" }
   );
+
+  // Store the active session token
+  user.activeSessionToken = token;
+  await user.save();
+
   res.json({ status: "success", data: { email }, token, role: user.role });
 };
 
@@ -131,4 +146,33 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, verifyEmail };
+// logout user
+const logoutUser = async (req, res) => {
+  try {
+    const userId = req.currentUser.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    // Clear the active session token
+    user.activeSessionToken = null;
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
+export { registerUser, loginUser, verifyEmail, logoutUser };
