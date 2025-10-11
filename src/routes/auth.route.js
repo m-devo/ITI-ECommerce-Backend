@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   verifyEmail,
+  verifyDeviceLogin,
   logoutUser,
 } from "../controllers/api/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
@@ -15,6 +16,8 @@ userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
 // verify email
 userRouter.get("/verify/:token", verifyEmail);
+// verify new device login
+userRouter.get("/verify-device/:token", verifyDeviceLogin);
 // logout user
 userRouter.post("/logout", verifyToken, logoutUser);
 

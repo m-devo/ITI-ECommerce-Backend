@@ -2,7 +2,10 @@ import { User } from "../../../models/users.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { sendVerificationEmail } from "../../../utils/sendEmail.js";
+import {
+  sendVerificationEmail,
+  sendDeviceVerificationEmail,
+} from "../../../utils/sendEmail.js";
 
 // register a new user
 const registerUser = async (req, res) => {
@@ -85,11 +88,29 @@ const loginUser = async (req, res) => {
 
   // Check if the user has an active session
   if (user.activeSessionToken) {
-    return res.status(409).json({
-      status: "error",
-      message:
-        "You are already logged in from another device. Please logout from the other device first.",
-    });
+    // Generate device verification token
+    const deviceToken = crypto.randomBytes(32).toString("hex");
+    const deviceTokenExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    // Store pending device token
+    user.pendingDeviceToken = deviceToken;
+    user.pendingDeviceTokenExpires = deviceTokenExpires;
+    await user.save();
+
+    // Send verification email
+    try {
+      await sendDeviceVerificationEmail(email, deviceToken);
+      return res.status(200).json({
+        status: "pending",
+        message:
+          "You are already logged in from another device. We've sent a verification email to confirm this new login. Please check your email.",
+      });
+    } catch (emailError) {
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to send verification email. Please try again.",
+      });
+    }
   }
 
   // Generate new token
@@ -146,6 +167,56 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+// verify device login
+const verifyDeviceLogin = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({
+      pendingDeviceToken: token,
+      pendingDeviceTokenExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid or expired verification token",
+      });
+    }
+
+    // Generate new token for the new device
+    const newToken = jwt.sign(
+      { email: user.email, id: user._id, role: user.role },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "1h" }
+    );
+
+    // Clear old session and set new one
+    user.activeSessionToken = newToken;
+    user.pendingDeviceToken = null;
+    user.pendingDeviceTokenExpires = null;
+    await user.save();
+
+    res.json({
+      status: "success",
+      message:
+        "Device verified successfully. Your previous session has been terminated.",
+      token: newToken,
+      data: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
 // logout user
 const logoutUser = async (req, res) => {
   try {
@@ -175,4 +246,4 @@ const logoutUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, verifyEmail, logoutUser };
+export { registerUser, loginUser, verifyEmail, verifyDeviceLogin, logoutUser };
