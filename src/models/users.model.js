@@ -20,6 +20,8 @@ const userSchema = new mongoose.Schema({
   verificationToken: { type: String },
   verificationTokenExpires: { type: Date },
   activeSessionToken: { type: String, default: null },
+  pendingDeviceToken: { type: String, default: null },
+  pendingDeviceTokenExpires: { type: Date, default: null },
 });
 
 export const User = mongoose.model("User", userSchema);
