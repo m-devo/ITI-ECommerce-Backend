@@ -1,6 +1,5 @@
 import nodemailer from "nodemailer";
 
-
 export const sendVerificationEmail = async (email, token) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -132,6 +131,9 @@ export const sendLowStockEmail = async (productName, quantity) => {
     await transporter.sendMail(mailOptions);
     console.log(` Low stock email sent for ${productName}`);
   } catch (error) {
-    console.error(`Failed to send low stock email for ${productName}:`, error.message);
+    console.error(
+      `Failed to send low stock email for ${productName}:`,
+      error.message
+    );
   }
 };
