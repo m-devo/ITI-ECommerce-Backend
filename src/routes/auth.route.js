@@ -5,6 +5,8 @@ import {
   verifyEmail,
   verifyDeviceLogin,
   logoutUser,
+  forgotPassword,
+  resetPassword,
 } from "../controllers/api/auth/auth.controller.js";
 import { verifyToken } from "../middlewares/auth.middleware.js";
 
@@ -20,5 +22,9 @@ userRouter.get("/verify/:token", verifyEmail);
 userRouter.get("/verify-device/:token", verifyDeviceLogin);
 // logout user
 userRouter.post("/logout", verifyToken, logoutUser);
+// forgot password
+userRouter.post("/forgot-password", forgotPassword);
+// reset password
+userRouter.post("/reset-password/:token", resetPassword);
 
 export default userRouter;
