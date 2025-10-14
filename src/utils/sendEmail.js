@@ -54,3 +54,31 @@ export const sendDeviceVerificationEmail = async (email, token) => {
 
   await transporter.sendMail(mailOptions);
 };
+
+export const sendPasswordResetEmail = async (email, token) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const resetLink = `${process.env.BASE_URL}/api/auth/reset-password/${token}`;
+
+  const mailOptions = {
+    from: `"Your Favorite Book Store Website" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Password Reset Request",
+    html: `
+      <h3>Password Reset</h3>
+      <p>You requested a password reset for your account.</p>
+      <p>Please click the link below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+      <p>This link will expire in 1 hour.</p>
+      <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};

@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
   activeSessionToken: { type: String, default: null },
   pendingDeviceToken: { type: String, default: null },
   pendingDeviceTokenExpires: { type: Date, default: null },
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
 });
 
 export const User = mongoose.model("User", userSchema);
