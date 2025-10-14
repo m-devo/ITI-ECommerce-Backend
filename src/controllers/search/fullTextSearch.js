@@ -1,4 +1,4 @@
-import { Book } from "./../../models/books.model.js";
+import Book from "../../models/bookSchema.js";
 
 //  Basic Text Search
 export const searchBooks = async (req, res) => {
