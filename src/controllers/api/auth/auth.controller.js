@@ -5,6 +5,7 @@ import crypto from "crypto";
 import {
   sendVerificationEmail,
   sendDeviceVerificationEmail,
+  sendPasswordResetEmail,
 } from "../../../utils/sendEmail.js";
 
 // get user profile
@@ -251,4 +252,120 @@ const logoutUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, verifyEmail, verifyDeviceLogin, logoutUser, getUserProfile };
+// forgot password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: "error",
+        message: "Email is required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(403).json({
+        status: "error",
+        message: "please register, the email not found.",
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpires = Date.now() + 60 * 60 * 1000;
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpires;
+    await user.save();
+
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+      res.status(200).json({
+        status: "success",
+        message: "password reset link has been sent.",
+      });
+    } catch (emailError) {
+      // Clear the reset token if email fails
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to send reset email. Please try again.",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
+// reset password
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        status: "error",
+        message: "Password is required",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        status: "error",
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid or expired reset token",
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update password and clear reset token
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    user.activeSessionToken = null;
+    await user.save();
+
+    res.json({
+      status: "success",
+      message:
+        "Password reset successfully. Please login with your new password.",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Internal server error",
+    });
+  }
+};
+
+export {
+  registerUser,
+  loginUser,
+  verifyEmail,
+  verifyDeviceLogin,
+  logoutUser,
+  forgotPassword,
+  resetPassword,
+};
