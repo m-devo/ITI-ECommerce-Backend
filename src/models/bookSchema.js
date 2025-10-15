@@ -8,7 +8,18 @@ const bookSchema = new mongoose.Schema({
   stock: { type: Number, required: true, min: [0, 'Stock cannot be negative'] },
   bookPath: { type: String, required: true },
   imagePath:{ type: String, required: true },
-  uploadedAt: { type: Date, default: Date.now }
-})
+  uploadedAt: { type: Date, default: Date.now },
+  averageRating: {type: Number, default: 0},
+  featuredAt:{type: Date, index: true},
+  reviewCount: {type: Number, default: 0},
+  recomendedBooks: [{ // for recommendations engine 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Book"
+    }],
+  descriptionVector: { //for smart search
+        type : [Number]
+    },
+    
+}, {timestamps:true})
 
 export default mongoose.model('Book', bookSchema);

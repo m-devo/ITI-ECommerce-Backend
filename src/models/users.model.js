@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema({
   pendingDeviceTokenExpires: { type: Date, default: null },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
+  isSubscribedToNewsService: {type: Boolean},
+
 });
 
 export const User = mongoose.model("User", userSchema);

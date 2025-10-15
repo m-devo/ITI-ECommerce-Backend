@@ -6,9 +6,10 @@ const orderShema = new mongoose.Schema({
         book: {type: mongoose.Schema.Types.ObjectId, ref: "Book"},
         quantity: Number,
         price: Number,
+        _id: false
     }],
     totalPrice: { type: Number, required: true},
-    status: {type: String, enum :["pending", "paid", "cancelled"], default: "pending"}
+    status: {type: String, enum :["pending", "paid", "cancelled", "delivered"], default: "pending"}
 
 },{timestamps: true});
 
