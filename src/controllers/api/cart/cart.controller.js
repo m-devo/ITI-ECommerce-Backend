@@ -4,16 +4,19 @@ import ApiResponse from '../../../utils/ApiResponse.js';
 
 
 export const CartController = {
+
+
     getUserCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
+        await CartService.synchronizeCartStock(userId); // Ensure cart is up-to-date and valid
         const cart = await CartService.getUserCart(userId);
         res.status(200).json(new ApiResponse(200, cart, "Cart retrieved successfully"));
     }),
     
-    updateBookInCart: catchAsync(async (req, res) => {
+    updateBooksInCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        const { bookId, quantity } = req.body;
-        const cart = await CartService.updateBookInCart(userId, bookId, quantity);
+        const books = req.body;
+        const cart = await CartService.updateBooksInCart(userId, books);
         res.status(200).json(new ApiResponse(200, cart, "Cart updated successfully"));
     }),
 
@@ -31,10 +34,10 @@ export const CartController = {
         res.status(200).json(new ApiResponse(200, cart, "Item quantity decremented successfully"));
     }),
 
-    removeBookFromCart: catchAsync(async (req, res) => {
+    removeItemFromCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
         const { bookId } = req.body;
-        const cart = await CartService.removeBookFromCart(userId, bookId);
+        const cart = await CartService.removeItemFromCart(userId, bookId);
         res.status(200).json(new ApiResponse(200, cart, "Item removed from cart successfully"));
     }),
 
@@ -43,18 +46,12 @@ export const CartController = {
         await CartService.clearCart(userId);
         res.status(200).json(new ApiResponse(200, null, "Cart cleared successfully"));
     }),
+
+    AbandonedCartReminder: catchAsync(async (req, res, next) => {
+        await CartService.AbandonedCartReminder();
+
+        res.status(200).json(
+            new ApiResponse(200, null, "Abandoned cart reminder process was triggered successfully.")
+        );
+    })
 };
-
-// import cartService from "../../../services/cart.service.js";
-// import ApiResponse from "../../../utils/ApiResponse.js";
-// import catchAsync from "../../../utils/catchAsync.js";
-
-// const cartController = catchAsync(async (req, res, next) => {
-//     await cartService.AbandonedCartReminder();
-
-//     res.status(200).json(
-//         new ApiResponse(200, null, "Abandoned cart reminder process was triggered successfully.")
-//     );
-// });
-
-// export default cartController;

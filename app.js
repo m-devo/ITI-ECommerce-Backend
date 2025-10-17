@@ -15,7 +15,6 @@ import cartRouter from './src/routes/cart.routes.js';
 
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger.js';
-import cartRoutes from './src/routes/cart.route.js';
 import { isAuth } from './src/middlewares/isAuth.middleware.js';
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
@@ -45,9 +44,6 @@ app.use(express.json());
 // auth routes
 app.use('/api/auth', authRouter);
 
-// cart routes
-app.use('/api/cart', isAuth, cartRoutes);
-
 // #todo check is admin middleware
 app.use('/api/admin/users', userRoutes);
 // book routes
@@ -62,7 +58,8 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
-app.use("/api/carts", cartRouter)
+// cart routes
+app.use('/api/cart', isAuth, cartRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {

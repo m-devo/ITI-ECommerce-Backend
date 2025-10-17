@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const cartSchema = new mongoose.Schema({
-    _id: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         unique: true, 
@@ -10,7 +10,7 @@ const cartSchema = new mongoose.Schema({
     items: [{ 
         bookId: { 
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'books',
+            ref: 'Book',
             required: true
         },
         quantity: {
@@ -22,6 +22,15 @@ const cartSchema = new mongoose.Schema({
     }]
     }, {
         timestamps: true
+})
+
+cartSchema.pre("save", function(next) {
+        if(this.isModified("items")) {
+            this.lastUpdateAt = new Date();
+            this.reminderSent = false
+    }
+    next()
+    
 })
 
 export const Cart = mongoose.model("Cart", cartSchema);
