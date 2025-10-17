@@ -7,6 +7,18 @@ const options = {
             title: 'eBook NodeJs API Documentation',
             version: '1.0.0',
         },
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                }
+            }
+        },
+        security: [
+            { bearerAuth: [] }
+        ]
     },
     // Path to the API docs
     apis: [

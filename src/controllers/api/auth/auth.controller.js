@@ -8,6 +8,11 @@ import {
   sendPasswordResetEmail,
 } from "../../../utils/sendEmail.js";
 
+// get user profile
+const getUserProfile = async (req, res) => {
+  return res.json({ status: "success", data: req.currentUser });
+};
+
 // register a new user
 const registerUser = async (req, res) => {
   console.log(req);

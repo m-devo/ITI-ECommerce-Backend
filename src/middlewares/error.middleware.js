@@ -1,6 +1,12 @@
 
 const errorHandler = (err, req, res, next) => {
-    const statusCode = err.statusCode || res.statusCode || 500;
+
+    const resHasErrorStatus = typeof res.statusCode === 'number' && res.statusCode >= 400;
+    const statusCode = err.statusCode || (resHasErrorStatus ? res.statusCode : 500);
+
+    if (process.env.NODE_ENV !== 'production') {
+        console.error(err);
+    }
 
     res.status(statusCode).json({
         statusCode,

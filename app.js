@@ -15,6 +15,7 @@ import cartRouter from './src/routes/cart.routes.js';
 
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger.js';
+import { isAuth } from './src/middlewares/isAuth.middleware.js';
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
 import path from 'path';
@@ -57,7 +58,8 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
-app.use("/api/carts", cartRouter)
+// cart routes
+app.use('/api/cart', isAuth, cartRouter);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
