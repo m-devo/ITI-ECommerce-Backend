@@ -1,0 +1,199 @@
+paths:
+  /api/cart:
+    get:
+      summary: Get the authenticated user's cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: The user's cart retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse' # Assuming you have a standard wrapper
+              example:
+                statusCode: 200
+                data:
+                  _id: "68eb123456789abcdef12345"
+                  userId: "68eaae855274aeb09fa23a2e"
+                  items:
+                    - quantity: 2
+                      book:
+                        _id: "68e7ed98aa7000812ffe6213"
+                        title: "Machine Learning"
+                        author: "Marijn Haverbeke"
+                        price: 66
+                        stock: 16
+                message: "Cart retrieved successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+
+  /api/cart/update:
+    put:
+      summary: Update multiple books in the cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: 
+                type: object
+                properties:
+                  bookId:
+                    type: string
+                  quantity:
+                    type: integer
+                    description: "Use quantity 0 to remove."
+                    minimum: 0
+            example:
+              - bookId: "68e7ed98aa7000812ffe6213"
+                quantity: 3
+              - bookId: "68e817158483527382d205ea"
+                quantity: 0 # This will remove the book
+      responses:
+        '200':
+          description: Cart updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '400':
+          description: Bad Request (e.g., out of stock)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 400
+                message: "Only 16 units of Machine Learning are available"
+                success: false
+        '404':
+          description: Not Found (e.g., bookId does not exist)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 404
+                message: "Book not found"
+                success: false
+
+  /api/cart/items/{bookId}/increment:
+    put:
+      summary: Increment an item's quantity by 1
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to increment.
+          example: '68e7ed98aa7000812ffe6213'
+      responses:
+        '200':
+          description: Item quantity incremented successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '400':
+          description: Bad Request (e.g., out of stock)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 400
+                message: "Only 16 units of Machine Learning are available"
+                success: false
+
+  /api/cart/items/{bookId}/decrement:
+    put:
+      summary: Decrement an item's quantity by 1
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to decrement.
+          example: '68e7ed98aa7000812ffe6213'
+      responses:
+        '200':
+          description: Item quantity decremented successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '404':
+          description: Not Found (e.g., item not in cart)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 404
+                message: "Item not found in cart"
+                success: false
+
+  /api/cart/items/{bookId}:
+    delete:
+      summary: Remove an item completely from the cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to remove.
+          example: '68e7ed98aa7000812ffe6213'
+      responses:
+        '200':
+          description: Item removed from cart successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+
+  /api/cart/clear:
+    delete:
+      summary: Clear all items from the user's cart
+      tags: [Cart]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart cleared successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                statusCode: 200
+                data:
+                  _id: "68eb123456789abcdef12345"
+                  userId: "68eaae855274aeb09fa23a2e"
+                  items: []
+                message: "Cart cleared successfully"

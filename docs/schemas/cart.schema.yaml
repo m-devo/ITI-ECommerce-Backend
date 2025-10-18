@@ -1,0 +1,87 @@
+components:
+  schemas:
+    # Standard API success response wrapper
+    ApiResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          nullable: true
+          description: "The actual response data (e.g., a Cart object or null)."
+        message:
+          type: string
+          example: "Cart retrieved successfully"
+        success:
+          type: boolean
+          default: true
+          example: true
+
+    # Standard API error response schema
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Only 16 units of Machine Learning are available"
+        success:
+          type: boolean
+          example: false
+
+    # A single book object
+    Book:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: '68e7ed98aa7000812ffe6213'
+        title:
+          type: string
+          example: 'Machine Learning'
+        author:
+          type: string
+          example: 'Marijn Haverbeke'
+        price:
+          type: number
+          example: 66
+        stock:
+          type: integer
+          example: 16
+
+    # How a cart item looks in the API response
+    CartItemResponse:
+      type: object
+      properties:
+        quantity:
+          type: integer
+          example: 2
+        book:
+          $ref: '#/components/schemas/Book'
+
+    # The main Cart object response
+    Cart:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The cart id
+          example: "68eb123456789abcdef12345"
+        userId:
+          type: string
+          description: The user's id
+          example: "68eaae855274aeb09fa23a2e"
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItemResponse'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
