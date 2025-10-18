@@ -31,8 +31,8 @@ import { fileURLToPath } from 'url';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-connectDB();
-redisConnection(); // opening redis connection
+await connectDB();
+await redisConnection(); // opening redis connection
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

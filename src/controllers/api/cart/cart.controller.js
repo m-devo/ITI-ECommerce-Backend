@@ -5,10 +5,8 @@ import ApiResponse from '../../../utils/ApiResponse.js';
 
 export const CartController = {
 
-
     getUserCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        await CartService.synchronizeCartStock(userId); // Ensure cart is up-to-date and valid
         const cart = await CartService.getUserCart(userId);
         res.status(200).json(new ApiResponse(200, cart, "Cart retrieved successfully"));
     }),
@@ -22,21 +20,21 @@ export const CartController = {
 
     incrementItemQuantity: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        const { bookId } = req.body;
+        const { bookId } = req.params;
         const cart = await CartService.incrementItemQuantity(userId, bookId);
         res.status(200).json(new ApiResponse(200, cart, "Item quantity incremented successfully"));
     }),
 
     decrementItemQuantity: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        const { bookId } = req.body;
+        const { bookId } = req.params;
         const cart = await CartService.decrementItemQuantity(userId, bookId);
         res.status(200).json(new ApiResponse(200, cart, "Item quantity decremented successfully"));
     }),
 
     removeItemFromCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        const { bookId } = req.body;
+        const { bookId } = req.params;
         const cart = await CartService.removeItemFromCart(userId, bookId);
         res.status(200).json(new ApiResponse(200, cart, "Item removed from cart successfully"));
     }),

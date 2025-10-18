@@ -12,8 +12,9 @@ export const updateBookSchema = Joi.object({
         .required()
 });
 
-export const modifyBookSchema = Joi.object({
-    body: Joi.object({
+
+export const bookIdParamSchema = Joi.object({
+    params: Joi.object({
         bookId: Joi.string().hex().length(24).required()
     })
 });
