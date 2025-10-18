@@ -1,0 +1,111 @@
+paths:
+  /api/admin/order/allOrders:
+    get:
+      summary: Get all orders (Admin only)
+      description: Retrieve a paginated list of all orders with optional filters (status, user, book).
+      tags: [Admin Orders]
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, paid, cancelled, completed]
+          description: Filter orders by status
+        - in: query
+          name: user
+          schema:
+            type: string
+          description: Filter orders by user ID
+        - in: query
+          name: book
+          schema:
+            type: string
+          description: Filter orders containing a specific book ID
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Successfully retrieved list of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalOrders:
+                    type: integer
+                    example: 25
+                  orders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+        "404":
+          description: No orders found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/order/update/{id}:
+    patch:
+      summary: Update order status (Admin only)
+      description: Update the status of a specific order by its ID.
+      tags: [Admin Orders]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, paid, cancelled, completed]
+                  example: "completed"
+      responses:
+        "200":
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        "400":
+          description: Invalid order status or ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

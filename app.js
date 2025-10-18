@@ -5,7 +5,7 @@ import connectDB from './config/db.js';
 import {redisConnection} from "./config/redis.js";
 
 import errorHandler from './src/middlewares/error.middleware.js';
-
+import orderRouter from './src/routes/order.route.js';
 import userRoutes from './src/routes/user.routes.js';
 import authRouter from "./src/routes/auth.route.js";
 import reportRouter from "./src/routes/report.routes.js";
@@ -15,11 +15,9 @@ import cartRouter from './src/routes/cart.routes.js';
 
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './docs/swagger.js';
-import { isAuth } from './src/middlewares/isAuth.middleware.js';
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
 import path from 'path';
-
 import "./src/services/stock.service.js";
 
 import "./src/jobs/dailySalesReport.job.js";                          
@@ -31,8 +29,8 @@ import { fileURLToPath } from 'url';
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-await connectDB();
-await redisConnection(); // opening redis connection
+connectDB();
+redisConnection(); // opening redis connection
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +46,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin/users', userRoutes);
 // book routes
 app.use('/api/admin/book',bookRouter)
+app.use('/api/admin/order',orderRouter)
 
 //daily report***
 app.use('/api/reports', reportRouter);
@@ -58,8 +57,7 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
-// cart routes
-app.use('/api/cart', isAuth, cartRouter);
+app.use("/api/carts", cartRouter)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {

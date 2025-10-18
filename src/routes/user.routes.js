@@ -6,21 +6,21 @@ import restrictTo from '../middlewares/restrictTo.middleware.js';
 import protect  from "../middlewares/protect.middleware.js";
 const router = Router();
 
-router.get('/users',protect,restrictTo('admin') ,UserController.getAllUsers);
+router.get('/allusers',protect,restrictTo('admin') ,UserController.getAllUsers);
 
 
 router.get(
-    '/users/:id',
+    '/:id',
     protect,restrictTo('admin'),
     UserController.getUserById
 );
 router.post(
-    '/users/update/:id',
+    '/update/:id',
     protect,restrictTo('admin'),
     UserController.updateUser
 )
 router.delete(
-    '/users/delete/:id',
+    '/delete/:id',
     protect,restrictTo('admin'),
     UserController.deleteUser
 );

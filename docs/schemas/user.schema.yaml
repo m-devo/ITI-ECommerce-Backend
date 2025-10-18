@@ -9,10 +9,10 @@ components:
           example: '60564fcb54425c6a18d1d4d5'
         name:
           type: string
-          example: 'User Name'
+          example: 'Aya Hamed'
         email:
           type: string
-          example: 'user@example.com'
+          example: 'ayahamed@example.com'
         role:
           type: string
           enum: [user, admin, author]
@@ -21,3 +21,20 @@ components:
           type: string
           format: date-time
           example: '2025-10-05T14:48:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2025-10-10T14:48:00.000Z'
+
+    Error:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 404
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "User not found"

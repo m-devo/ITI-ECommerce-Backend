@@ -1,5 +1,4 @@
 import mongoose  from 'mongoose'
-
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, required: true },
@@ -12,14 +11,14 @@ const bookSchema = new mongoose.Schema({
   averageRating: {type: Number, default: 0},
   featuredAt:{type: Date, index: true},
   reviewCount: {type: Number, default: 0},
-  recomendedBooks: [{ // for recommendations engine 
+  recomendedBooks: [{ 
         type: mongoose.Schema.Types.ObjectId,
         ref: "Book"
-    }],
-  descriptionVector: { //for smart search
+  }],
+  descriptionVector: { 
         type : [Number]
-    },
-    
+  },
+  isDeleted: { type: Boolean, default: false } 
 }, {timestamps:true})
 
 export default mongoose.model('Book', bookSchema);
