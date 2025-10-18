@@ -1,0 +1,71 @@
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "6713f0b8e3a4b2a5d9e6a123"
+        user:
+          type: string
+          description: Reference to the user who placed the order
+          example: "670fe2b8a9b1c4e8d3c5f111"
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              bookId:
+                type: string
+                description: Reference to the book
+                example: "6713f0b8e3a4b2a5d9e6a321"
+              quantity:
+                type: integer
+                example: 2
+              price:
+                type: number
+                example: 150
+        billingData:
+          type: array
+          items:
+            type: object
+            properties:
+              fullName:
+                type: string
+                example: "Aya Hamed"
+              address:
+                type: string
+                example: "12 Abbas Street"
+              city:
+                type: string
+                example: "Cairo"
+              postalCode:
+                type: string
+                example: "11765"
+              country:
+                type: string
+                example: "Egypt"
+              phone:
+                type: string
+                example: "+201234567890"
+        paymentMethod:
+          type: string
+          example: "credit_card"
+        totalPrice:
+          type: number
+          example: 300
+        totalItems:
+          type: integer
+          example: 3
+        status:
+          type: string
+          enum: [pending, paid, cancelled, completed]
+          example: "pending"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-10T14:48:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-11T10:15:00.000Z"

@@ -5,7 +5,7 @@ import connectDB from './config/db.js';
 import {redisConnection} from "./config/redis.js";
 
 import errorHandler from './src/middlewares/error.middleware.js';
-
+import orderRouter from './src/routes/order.route.js';
 import userRoutes from './src/routes/user.routes.js';
 import authRouter from "./src/routes/auth.route.js";
 import reportRouter from "./src/routes/report.routes.js";
@@ -18,7 +18,6 @@ import { swaggerSpec } from './docs/swagger.js';
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
 import path from 'path';
-
 import "./src/services/stock.service.js";
 
 import "./src/jobs/dailySalesReport.job.js";                          
@@ -47,6 +46,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin/users', userRoutes);
 // book routes
 app.use('/api/admin/book',bookRouter)
+app.use('/api/admin/order',orderRouter)
 
 //daily report***
 app.use('/api/reports', reportRouter);
