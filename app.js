@@ -13,7 +13,7 @@ import featuresRouter from './src/routes/features.routes.js';
 import newsRouter from './src/routes/news.route.js';
 import cartRouter from './src/routes/cart.routes.js';
 import checkoutRouter from './src/routes/checkout.routes.js';
-
+import {createRateLimiter} from './src/middlewares/rateLimit.middleware.js'
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
@@ -33,6 +33,10 @@ const PORT = process.env.PORT || 4000;
 connectDB();
 redisConnection(); // opening redis connection
 startOrdersReconciliationCron();
+
+app.set('trust proxy', 1);
+const apiLimiter = createRateLimiter();
+app.use('/api', apiLimiter);
 
 
 const __filename = fileURLToPath(import.meta.url);
