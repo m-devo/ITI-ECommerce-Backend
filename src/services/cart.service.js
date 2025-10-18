@@ -3,33 +3,77 @@ import ApiError from '../utils/ApiError.js';
 import emailService from "./email.service.js";
 import { getIdString } from '../utils/id.util.js';
 import Book from '../models/bookSchema.js';
+import redisClient from '../../config/redis.js';
+import {deleteRedisCache}  from '../utils/redis.utils.js';
 
+const getCartKey = (userId) => `cart:${getIdString(userId)}`;
+
+const CART_CACHE_DURATION = 60 * 60 * 24; // 1 day
 
 export const CartService = {
 
     // get user cart by userId from cart collection
     async getUserCart(userId) {
+
+        // Redis Cart Key
+        const cartKey = getCartKey(userId);
+
+        try {
+            // Try Redis Cache
+            const cachedCart = await redisClient.get(cartKey);
+            if (cachedCart) {
+
+                return JSON.parse(cachedCart);
+            }
+        } catch (err) {
+            console.error('Redis GET error:', err);
+        }
+
+        // no cache, use MongoDB
         let cart = await Cart.findOne({ userId: userId }).populate('items.bookId').lean();
 
         if (!cart) {
-            return this.createCartForUser(userId);
+            cart = await this.createCartForUser(userId);
         }
 
 
-        cart.items = cart.items.map(item => ({
-            quantity: item.quantity,
-            book: item.bookId 
-        }));
+        if (cart.toObject) {
+            cart = cart.toObject();
+        }
+
+        // items in catt
+        if (cart.items && cart.items.length > 0) {
+            cart.items = cart.items.map(item => ({
+                quantity: item.quantity,
+                book: item.bookId 
+            }));
+        } else {
+            // no items
+            cart.items = []; 
+        }
+        
+        try {
+            // cache in redis
+            await redisClient.set(cartKey, JSON.stringify(cart), {
+                EX: CART_CACHE_DURATION, 
+            });
+        } catch (err) {
+            console.error('Redis SET error:', err);
+        }
     
         return cart;
     },
 
     // create user cart if not exists
     async createCartForUser(userId) {
+
+        // check if user has cart
         const existingCart = await Cart.findOne({ userId: userId });
         if (existingCart) {
             return existingCart;
         }
+
+        // create new cart with empty items
         const newCart = new Cart({ userId: userId, items: [] });
         await newCart.save();
         return newCart;
@@ -49,7 +93,6 @@ export const CartService = {
         
         let needsSave = false;
 
-        const originalItemsCount = cart.items.length;
         cart.items = cart.items.reduce((acc, currentItem) => {
             const book = booksMap.get(getIdString(currentItem.bookId));
 
@@ -68,6 +111,8 @@ export const CartService = {
         }, []); 
         if (needsSave) {
             await cart.save();
+
+            await deleteRedisCache(getCartKey(userId));
         }
 
         const populatedCart = cart.toObject(); 
@@ -81,7 +126,7 @@ export const CartService = {
 
 
     async updateBooksInCart(userId, bookUpdates) {
-        const cart = await Cart.findOne({ userId });
+        let cart = await Cart.findOne({ userId });
 
         if (!cart) {
             cart = await this.createCartForUser(userId);
@@ -119,6 +164,8 @@ export const CartService = {
 
         await cart.save();
 
+        await deleteRedisCache(getCartKey(userId));
+
         await cart.populate('items.bookId');
 
         return cart;
@@ -128,7 +175,7 @@ export const CartService = {
     async incrementItemQuantity(userId, bookId) {
         let book = await this.validateBook(bookId, 1);
 
-        const cart = await Cart.findOne({ userId: userId });
+        let cart = await Cart.findOne({ userId: userId });
 
         if (!cart) {
             cart = await this.createCartForUser(userId);
@@ -150,6 +197,8 @@ export const CartService = {
         }
 
         await cart.save();
+
+        await deleteRedisCache(getCartKey(userId));
 
         await cart.populate('items.bookId');
 
@@ -184,6 +233,8 @@ export const CartService = {
         
         await cart.save();
 
+        await deleteRedisCache(getCartKey(userId));
+
         await cart.populate('items.bookId');
 
         return cart;
@@ -203,15 +254,13 @@ export const CartService = {
         }
 
         const bookIdStr = getIdString(bookId);
-        cart.items = cart.items.filter(item => {
-            const itemIdStr = getIdString(item.bookId);
-            return itemIdStr !== bookIdStr;
-        });
+        cart.items = cart.items.filter(item => getIdString(item.bookId) !== bookIdStr);
 
         await cart.save();
+        
+        await deleteRedisCache(getCartKey(userId));
 
         await cart.populate('items.bookId');
-
         return cart;
     },
 
@@ -225,6 +274,8 @@ export const CartService = {
 
         cart.items = [];
         await cart.save();
+        
+        await deleteRedisCache(getCartKey(userId));
 
         return cart;
     },

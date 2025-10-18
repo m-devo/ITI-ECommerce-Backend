@@ -5,10 +5,8 @@ import ApiResponse from '../../../utils/ApiResponse.js';
 
 export const CartController = {
 
-
     getUserCart: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
-        await CartService.synchronizeCartStock(userId); // Ensure cart is up-to-date and valid
         const cart = await CartService.getUserCart(userId);
         res.status(200).json(new ApiResponse(200, cart, "Cart retrieved successfully"));
     }),
