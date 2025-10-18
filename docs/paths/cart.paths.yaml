@@ -91,20 +91,20 @@ paths:
                 message: "Book not found"
                 success: false
 
-  /api/cart/increment:
+  /api/cart/items/{bookId}/increment:
     put:
       summary: Increment an item's quantity by 1
       tags: [Cart]
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModifyItemBody'
-            example:
-              bookId: "68e7ed98aa7000812ffe6213"
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to increment.
+          example: '68e7ed98aa7000812ffe6213'
       responses:
         '200':
           description: Item quantity incremented successfully.
@@ -123,20 +123,20 @@ paths:
                 message: "Only 16 units of Machine Learning are available"
                 success: false
 
-  /api/cart/decrement:
+  /api/cart/items/{bookId}/decrement:
     put:
       summary: Decrement an item's quantity by 1
       tags: [Cart]
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModifyItemBody'
-            example:
-              bookId: "68e7ed98aa7000812ffe6213"
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to decrement.
+          example: '68e7ed98aa7000812ffe6213'
       responses:
         '200':
           description: Item quantity decremented successfully.
@@ -155,20 +155,20 @@ paths:
                 message: "Item not found in cart"
                 success: false
 
-  /api/cart/remove:
+  /api/cart/items/{bookId}:
     delete:
       summary: Remove an item completely from the cart
       tags: [Cart]
       security:
         - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModifyItemBody'
-            example:
-              bookId: "68e7ed98aa7000812ffe6213"
+      parameters:
+        - in: path
+          name: bookId
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to remove.
+          example: '68e7ed98aa7000812ffe6213'
       responses:
         '200':
           description: Item removed from cart successfully.
@@ -189,7 +189,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse' # Containing the empty Cart
+                $ref: '#/components/schemas/ApiResponse'
               example:
                 statusCode: 200
                 data:

@@ -85,13 +85,3 @@ components:
         updatedAt:
           type: string
           format: date-time
-
-    # How the body for modifying a single item looks
-    ModifyItemBody:
-      type: object
-      properties:
-        bookId:
-          type: string
-          example: '68e7ed98aa7000812ffe6213'
-      required:
-        - bookId
