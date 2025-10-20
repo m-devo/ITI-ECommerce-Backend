@@ -8,7 +8,7 @@ const router = express.Router();
 
 
 //  The same endpoint can handle both text and audio reviews
-router.post("/",uploadAudio.single("audio") ,createReview);
+router.post("/", verifyToken, uploadAudio.single("audio"), createReview);
 
 export default router;
 
