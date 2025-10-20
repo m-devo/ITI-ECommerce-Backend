@@ -368,4 +368,5 @@ export {
   logoutUser,
   forgotPassword,
   resetPassword,
+  getUserProfile
 };

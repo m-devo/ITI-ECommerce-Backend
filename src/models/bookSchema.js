@@ -21,4 +21,7 @@ const bookSchema = new mongoose.Schema({
   isDeleted: { type: Boolean, default: false } 
 }, {timestamps:true})
 
+// add index areej
+bookSchema.index({ title: "text", description: "text", category: "text", author: "text" });
+
 export default mongoose.model('Book', bookSchema);
