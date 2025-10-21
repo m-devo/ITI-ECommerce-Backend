@@ -9,12 +9,13 @@ import {validateBookUpload} from "../middlewares/validateBookFields.js";
 import { upload_field, validateAndSaveFiles } from "../middlewares/storage.middleware.js";
 import restrictTo from '../middlewares/restrictTo.middleware.js';
 import protect  from "../middlewares/protect.middleware.js";
+import {verifyToken} from"../middlewares/auth.middleware.js"
 
 import {validateBookUpdate} from "../middlewares/updateValidation.middleware.js"
 const bookRouter = express.Router();
 bookRouter.get('/allBooks',getBooks)
 bookRouter.get('/oneBook/:ID',protect,restrictTo('admin'),getOneBook)
-bookRouter.patch('/update/:ID', protect,
+bookRouter.patch('/update/:ID',verifyToken, protect,
  restrictTo('admin'),
    upload_field,
    validateBookUpdate,
@@ -24,6 +25,7 @@ bookRouter.delete('/delete/:ID',protect,restrictTo('admin'),deleteBook)
 
 bookRouter.post(
   "/create",
+  verifyToken,
   protect,restrictTo('admin','author'),
   upload_field,
   validateBookUpload,

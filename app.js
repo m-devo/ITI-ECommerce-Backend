@@ -2,7 +2,7 @@
 import 'dotenv/config';
 import express from 'express';
 import connectDB from './config/db.js';
-import { redisConnection } from "./config/redis.js";
+import {redisConnection} from "./config/redis.js";
 
 import errorHandler from './src/middlewares/error.middleware.js';
 import orderRouter from './src/routes/order.route.js';
@@ -19,8 +19,8 @@ import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
 import path from 'path';
 import "./src/services/stock.service.js";
-
-import "./src/jobs/dailySalesReport.job.js";
+import booksUser from "./src/routes/booksUser.route.js"
+import "./src/jobs/dailySalesReport.job.js";                          
 import "./src/jobs/updateBookOftheDay.js"
 import "./src/jobs/weeklyNews.job.js"
 import "./src/jobs/abandonedCart.job.js"
@@ -28,8 +28,8 @@ import reviewRoutes from "./src/routes/review.routes.js";
 import { fileURLToPath } from 'url';
 const app = express();
 const PORT = process.env.PORT || 4000;
-connectDB();
-redisConnection(); // opening redis connection
+ connectDB();
+ redisConnection(); // opening redis connection
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,11 +46,12 @@ app.use("/api/reviews", reviewRoutes);
 // #todo check is admin middleware
 app.use('/api/admin/users', userRoutes);
 // book routes
-app.use('/api/admin/book', bookRouter)
-app.use('/api/admin/order', orderRouter)
+app.use('/api/admin/book',bookRouter)
+app.use('/api/admin/order',orderRouter)
 
 //daily report***
 app.use('/api/reports', reportRouter);
+app.use('/api/public',booksUser)
 
 //GET Book of the Day***
 // POST Book of the Day By Admin
