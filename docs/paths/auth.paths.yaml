@@ -1,0 +1,436 @@
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account and send verification email
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - email
+                - password
+              properties:
+                firstName:
+                  type: string
+                  example: mohamed
+                lastName:
+                  type: string
+                  example: ahmed
+                email:
+                  type: string
+                  format: email
+                  example: mohamed.ahmed@example.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: password123
+                role:
+                  type: string
+                  enum: [user, admin, author]
+                  default: user
+                  example: user
+      responses:
+        "201":
+          description: User registered successfully. Verification email sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: User registered successfully. Please check your email to verify your account.
+                  data:
+                    type: object
+                    properties:
+                      firstName:
+                        type: string
+                        example: mohamed
+                      lastName:
+                        type: string
+                        example: ahmed
+                      email:
+                        type: string
+                        example: mohamed.ahmed@example.com
+                      role:
+                        type: string
+                        example: user
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Failed to send verification email or internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/login:
+    post:
+      summary: Login user
+      description: Authenticate user and return JWT token. If user has an active session, sends device verification email.
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: mohamed.ahmed@example.com
+                password:
+                  type: string
+                  format: password
+                  example: password123
+      responses:
+        "200":
+          description: Login successful or device verification email sent
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      status:
+                        type: string
+                        example: success
+                      data:
+                        type: object
+                        properties:
+                          email:
+                            type: string
+                            example: mohamed.ahmed@example.com
+                      token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      role:
+                        type: string
+                        example: user
+                  - type: object
+                    properties:
+                      status:
+                        type: string
+                        example: pending
+                      message:
+                        type: string
+                        example: You are already logged in from another device. We've sent a verification email to confirm this new login. Please check your email.
+        "400":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Email not verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/verify/{token}:
+    get:
+      summary: Verify email address
+      description: Verify user's email address using the verification token sent via email
+      tags: [Authentication]
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Email verification token
+          example: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+      responses:
+        "200":
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Email verified successfully. You can now login.
+        "400":
+          description: Invalid or expired verification token, or email already verified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/verify-device/{token}:
+    get:
+      summary: Verify new device login
+      description: Verify and authorize login from a new device. This will terminate the previous session.
+      tags: [Authentication]
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Device verification token
+          example: x1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6
+      responses:
+        "200":
+          description: Device verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Device verified successfully. Your previous session has been terminated.
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  data:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+                        example: mohamed.ahmed@example.com
+                      firstName:
+                        type: string
+                        example: mohamed
+                      lastName:
+                        type: string
+                        example: ahmed
+                      role:
+                        type: string
+                        example: user
+        "400":
+          description: Invalid or expired verification token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      summary: Logout user
+      description: Logout the current user and clear their active session
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Logged out successfully
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/profile:
+    get:
+      summary: Get user profile
+      description: Get the authenticated user's profile information
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved user profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  data:
+                    $ref: '#/components/schemas/User'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/forgot-password:
+    post:
+      summary: Request password reset
+      description: Send a password reset link to the user's email address
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: mohamed.ahmed@example.com
+      responses:
+        "200":
+          description: Password reset link sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: password reset link has been sent.
+        "400":
+          description: Email is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Email not found - user needs to register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Failed to send reset email or internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/reset-password/{token}:
+    post:
+      summary: Reset password
+      description: Reset user password using the reset token sent via email
+      tags: [Authentication]
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+          description: Password reset token
+          example: p1q2r3s4t5u6v7w8x9y0z1a2b3c4d5e6
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  format: password
+                  minLength: 6
+                  example: newPassword123
+                  description: New password (must be at least 6 characters)
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Password reset successfully. Please login with your new password.
+        "400":
+          description: Password is required, too short, or invalid/expired reset token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
