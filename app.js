@@ -3,15 +3,16 @@ import express from "express";
 import connectDB from "./config/db.js";
 import { redisConnection } from "./config/redis.js";
 import passport from "./config/passport.js";
-
-import errorHandler from "./src/middlewares/error.middleware.js";
-import orderRouter from "./src/routes/order.route.js";
-import userRoutes from "./src/routes/user.routes.js";
+import { isAuth } from "./src/middlewares/isAuth.middleware.js"
+import errorHandler from './src/middlewares/error.middleware.js';
+import orderRouter from './src/routes/order.route.js';
+import userRoutes from './src/routes/user.routes.js';
 import authRouter from "./src/routes/auth.route.js";
 import reportRouter from "./src/routes/report.routes.js";
-import featuresRouter from "./src/routes/features.routes.js";
-import newsRouter from "./src/routes/news.route.js";
-import cartRouter from "./src/routes/cart.routes.js";
+import featuresRouter from './src/routes/features.routes.js';
+import newsRouter from './src/routes/news.route.js';
+import cartRouter from './src/routes/cart.routes.js';
+import checkoutRouter from './src/routes/checkout.routes.js';
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
@@ -25,11 +26,14 @@ import "./src/jobs/updateBookOftheDay.js";
 import "./src/jobs/weeklyNews.job.js";
 import "./src/jobs/abandonedCart.job.js";
 import reviewRoutes from "./src/routes/review.routes.js";
+import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js"
 import { fileURLToPath } from "url";
 const app = express();
 const PORT = process.env.PORT || 4000;
- connectDB();
- redisConnection(); // opening redis connection
+connectDB();
+redisConnection(); // opening redis connection
+startOrdersReconciliationCron();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -64,7 +68,9 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
-app.use("/api/carts", cartRouter);
+app.use("/api/cart", isAuth, cartRouter);
+
+app.use("/api/checkout", checkoutRouter);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
@@ -73,14 +79,21 @@ app.use((req, res, next) => {
     message: "Route is not found",
   });
 });
-app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+
 ////////////////////////////////////////////////////////////////////////////////////////
 app.use("/api", searchRoutes);
 
 app.get("/", (req, res) => res.send("Bookstore Search API Running..."));
 
-// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
+
+
+
+
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+;
