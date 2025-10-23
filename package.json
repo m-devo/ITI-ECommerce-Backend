@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme",
   "dependencies": {
+    "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "crypto": "^1.0.1",
