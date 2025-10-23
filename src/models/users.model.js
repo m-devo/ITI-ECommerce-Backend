@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     },
   },
   password: { type: String, required: true },
+  googleId: { type: String, unique: true, sparse: true },
   role: { type: String, enum: ["user", "admin", "author"], default: "user" },
   token: { type: String },
   isVerified: { type: Boolean, default: false },
@@ -24,8 +25,7 @@ const userSchema = new mongoose.Schema({
   pendingDeviceTokenExpires: { type: Date, default: null },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
-  isSubscribedToNewsService: {type: Boolean},
-
+  isSubscribedToNewsService: { type: Boolean },
 });
 
 export const User = mongoose.model("User", userSchema);

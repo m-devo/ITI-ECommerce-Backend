@@ -360,6 +360,46 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const googleAuthSuccess = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const token = jwt.sign(
+      { email: user.email, id: user._id, role: user.role },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "30d" }
+    );
+
+    user.activeSessionToken = token;
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "Google authentication successful",
+      token: token,
+      data: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to complete Google authentication",
+    });
+  }
+};
+
+const googleAuthFailure = (req, res) => {
+  res.status(401).json({
+    status: "error",
+    message: "Google authentication failed",
+  });
+};
+
 export {
   registerUser,
   loginUser,
@@ -369,4 +409,6 @@ export {
   forgotPassword,
   resetPassword,
   getUserProfile,
+  googleAuthSuccess,
+  googleAuthFailure,
 };
