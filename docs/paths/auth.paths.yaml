@@ -434,3 +434,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+
+  /api/auth/google:
+    get:
+      summary: Login with Google
+      description: Initiate Google OAuth 2.0 authentication flow. Redirects user to Google login page.
+      tags: [Authentication]
+      responses:
+        "302":
+          description: Redirects to Google login page
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/google/callback:
+    get:
+      summary: Google OAuth callback
+      description: |
+        Callback endpoint for Google OAuth. This is called automatically by Google after user authentication.
+        On success, redirects to frontend with JWT token in URL query parameter.
+      tags: [Authentication]
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Authorization code from Google (provided automatically)
+        - in: query
+          name: state
+          schema:
+            type: string
+          description: State parameter for CSRF protection (provided automatically)
+      responses:
+        "302":
+          description: |
+            Redirects to frontend success page with token
+            Example: http://localhost:4000/auth/success?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: Authentication failed - redirects to frontend with error
+        "500":
+          description: Internal server error

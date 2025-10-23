@@ -35,6 +35,8 @@
     "nodemailer": "^7.0.7",
     "openai": "^6.5.0",
     "openai-whisper": "^1.0.2",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "redis": "^5.8.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
