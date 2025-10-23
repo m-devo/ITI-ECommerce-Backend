@@ -22,7 +22,7 @@ const redisConnection =  async () => {
         console.log("Redis is connected perfectly :)!");
     } catch (err) {
         console.error("Could not connect to Redis :(", err);
-        process.exit(1); 
+        // process.exit(1); 
     }
 };
 
