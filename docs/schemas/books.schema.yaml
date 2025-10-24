@@ -18,7 +18,13 @@ components:
           description: The author of the book
           example: "Aya Hamed"
 
-        descrption:
+        category:
+          type: string
+          defulat: Gneral
+          description: The category of book
+          example: "Operating System"  
+
+        description:
           type: string
           description: A detailed description of the book
           example: "An in-depth guide to understanding and implementing machine learning algorithms."

@@ -52,14 +52,14 @@ const getOneBook = catchAsync(async (req, res, next) => {
 
 
 const createBook = catchAsync(async(req,res,next)=>{
-    const {title,author,stock,descrption,price,category} = req.body
+    const {title,author,stock,description,price,category} = req.body
     const { imagePath, bookPath } = req.savedFiles || {}
 
   const newBook = await Book.create({
     title,
     author,
     price,
-    descrption,
+    description,
     stock,
     bookPath,
     imagePath,
@@ -93,7 +93,7 @@ const updateBook = catchAsync(async (req, res, next) => {
       }
     };
 
-    const fieldsToUpdate = ['title', 'author', 'price', 'stock', 'descrption', 'category'];
+    const fieldsToUpdate = ['title', 'author', 'price', 'stock', 'description', 'category'];
     fieldsToUpdate.forEach((field) => {
       if (req.body[field] !== undefined && req.body[field] !== '') {
         book[field] = req.body[field];

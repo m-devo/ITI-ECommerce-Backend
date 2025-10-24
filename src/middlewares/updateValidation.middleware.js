@@ -1,7 +1,7 @@
 import Book from '../models/bookSchema.js';
 
 const validateBookUpdate = async (req, res, next) => {
-  const { title, author, price, stock, descrption } = req.body;
+  const { title, author, price, stock, description } = req.body;
   const bookFile = req.files?.book?.[0];
   const imageFile = req.files?.image?.[0];
 
@@ -12,7 +12,7 @@ const validateBookUpdate = async (req, res, next) => {
     errors.push('Title cannot be empty');
   if (author !== undefined && !author.trim())
     errors.push('Author cannot be empty');
-  if (descrption !== undefined && !descrption.trim())
+  if (description !== undefined && !description.trim())
     errors.push('Description cannot be empty');
 
   if (price !== undefined) {
