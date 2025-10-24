@@ -301,37 +301,37 @@ export const CartService = {
             const fourDaysAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
 
             const abandonedCarts = await Cart.find({
-                cartItems: { $exists: true, $ne: [] },
+                items: { $exists: true, $ne: [] },
                 reminderSent: false,
-                lastUpdateAt: { $gte: fourDaysAgo, $lt: oneDayAgo }
-            }).populate("user", "firstName email").populate("cartItems.book");
+                updatedAt: { $gte: fourDaysAgo, $lt: oneDayAgo }
+            }).populate("userId", "firstName email").populate("items.bookId");
 
             if (abandonedCarts.length === 0) {
                 console.log("No abandoned carts to remind.");
-                return;
+                return {message: "No abandoned carts to remind.", count:0};
             }
 
             console.log(`Found ${abandonedCarts.length} abandoned carts. Sending reminders...`);
 
             for (const abandonedCart of abandonedCarts) {
-                if (!abandonedCart.user) {
-                    console.log(`Skipping cart ${abandonedCart._id} because its user no longer exists.`);
+                if (!abandonedCart.userId) {
+                    console.log(`Skipping cart ${abandonedCart._id} because its user no longer exists or is not populated.`);
                     continue; 
                 }
-                const validCartItems = abandonedCart.cartItems.filter(item => item.book !== null);
+                const validCartItems = abandonedCart.items.filter(item => item.bookId !== null);
 
                 if (validCartItems.length === 0) {
-                    console.log(`Skipping cart ${abandonedCart._id} for user ${abandonedCart.user.email} because its books no longer exist.`);
+                    console.log(`Skipping cart ${abandonedCart._id} for user ${abandonedCart.userId.email} because its books no longer exist.`);
                     continue;
                 }
         
                 const header = "You left something in your cart! 🛒";
-                const cartItemsHtml = abandonedCart.cartItems.map(item =>
-                    `<li><b>${item.book.title}</b> - Price: ${item.book.price} EGP</li>`
+                const cartItemsHtml = validCartItems.map(item =>
+                    `<li><b>${item.bookId.title}</b> - Price: ${item.bookId.price} EGP</li>`
                 ).join("");
 
                 const emailBody = `
-                    <h1>Hello frined ${abandonedCart.user.firstName},</h1>
+                    <h1>Hello friend ${abandonedCart.userId.firstName},</h1>
                     <p>We noticed you left some items in your shopping cart. Don't miss out!</p>
                     <ul>
                         ${cartItemsHtml}
@@ -346,7 +346,7 @@ export const CartService = {
                 `;
 
                 await emailService.sendEmail({
-                    to: abandonedCart.user.email,
+                    to: abandonedCart.userId.email,
                     subject: header,
                     html: emailBody
                 });
@@ -361,4 +361,3 @@ export const CartService = {
     }
 
 };    
-

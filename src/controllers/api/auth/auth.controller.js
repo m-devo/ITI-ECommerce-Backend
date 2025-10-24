@@ -96,7 +96,7 @@ const loginUser = async (req, res) => {
   if (user.activeSessionToken) {
     // Generate device verification token
     const deviceToken = crypto.randomBytes(32).toString("hex");
-    const deviceTokenExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const deviceTokenExpires = Date.now() + 15 * 60 * 1000;
 
     // Store pending device token
     user.pendingDeviceToken = deviceToken;
@@ -123,7 +123,7 @@ const loginUser = async (req, res) => {
   const token = jwt.sign(
     { email: user.email, id: user._id, role: user.role },
     process.env.JWT_SECRET_KEY,
-    { expiresIn: "1h" }
+    { expiresIn: "30d" } // Token valid for 7 days
   );
 
   // Store the active session token
@@ -194,7 +194,7 @@ const verifyDeviceLogin = async (req, res) => {
     const newToken = jwt.sign(
       { email: user.email, id: user._id, role: user.role },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: "1h" }
+      { expiresIn: "30d" }
     );
 
     // Clear old session and set new one
@@ -360,6 +360,46 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const googleAuthSuccess = async (req, res) => {
+  try {
+    const user = req.user;
+
+    const token = jwt.sign(
+      { email: user.email, id: user._id, role: user.role },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: "30d" }
+    );
+
+    user.activeSessionToken = token;
+    await user.save();
+
+    res.json({
+      status: "success",
+      message: "Google authentication successful",
+      token: token,
+      data: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Failed to complete Google authentication",
+    });
+  }
+};
+
+const googleAuthFailure = (req, res) => {
+  res.status(401).json({
+    status: "error",
+    message: "Google authentication failed",
+  });
+};
+
 export {
   registerUser,
   loginUser,
@@ -368,5 +408,7 @@ export {
   logoutUser,
   forgotPassword,
   resetPassword,
-  getUserProfile
+  getUserProfile,
+  googleAuthSuccess,
+  googleAuthFailure,
 };

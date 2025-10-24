@@ -1,0 +1,101 @@
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: The auto-generated ID of the book
+          example: "670fcfcb54425c6a18d1e5a9"
+
+        title:
+          type: string
+          description: The title of the book
+          example: "The Art of Machine Learning"
+
+        author:
+          type: string
+          description: The author of the book
+          example: "Aya Hamed"
+
+        category:
+          type: string
+          defulat: Gneral
+          description: The category of book
+          example: "Operating System"  
+
+        description:
+          type: string
+          description: A detailed description of the book
+          example: "An in-depth guide to understanding and implementing machine learning algorithms."
+
+        price:
+          type: number
+          description: The price of the book
+          example: 199.99
+
+        stock:
+          type: integer
+          description: The number of copies available in stock
+          example: 25
+
+        bookPath:
+          type: string
+          description: The S3 URL of the uploaded book file (PDF or eBook)
+          example: "https://mybucket.s3.eu-north-1.amazonaws.com/books/1761234098804-keyshot_3d_rendering.pdf"
+
+        imagePath:
+          type: string
+          description: The S3 URL of the book cover image
+          example: "https://mybucket.s3.eu-north-1.amazonaws.com/images/1761234111450-cover.png"
+
+        uploadedAt:
+          type: string
+          format: date-time
+          description: The date and time the book was uploaded
+          example: "2025-10-23T12:30:00.000Z"
+
+        averageRating:
+          type: number
+          description: Average rating of the book (from 0 to 5)
+          example: 4.7
+
+        featuredAt:
+          type: string
+          format: date-time
+          description: Date when the book was marked as featured
+          example: "2025-10-20T10:00:00.000Z"
+
+        reviewCount:
+          type: integer
+          description: The total number of reviews for this book
+          example: 14
+
+        recomendedBooks:
+          type: array
+          description: List of recommended book IDs related to this one
+          items:
+            type: string
+            example: "670fcfcb54425c6a18d1e5aa"
+
+        descriptionVector:
+          type: array
+          description: Numerical vector representation of the description
+          items:
+            type: number
+          example: [0.12, 0.48, 0.33, 0.91]
+
+        isDeleted:
+          type: boolean
+          description: Indicates whether the book is deleted
+          example: false
+
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-23T14:48:00.000Z"
+
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-23T15:10:00.000Z"

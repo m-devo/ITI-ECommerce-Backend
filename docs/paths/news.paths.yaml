@@ -1,0 +1,76 @@
+/api/news/weeklynews:
+  post:
+    summary: Trigger weekly news service (Admin)
+    tags: [News]
+    description: >
+      Manually triggers the weekly newsletter service that sends emails to all 
+      users subscribed to the news service (`isSubscribedToNewsService: true`).
+      The service collects new books added during the past week and the bestsellers, 
+      then sends an email summary to subscribers.
+      This endpoint is restricted to users with the 'admin' role.
+    security:
+      - bearerAuth: []
+    responses:
+      "200":
+        description: The weekly news service executed successfully.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiResponse"
+            examples:
+              noSubscribers:
+                summary: No subscribers found
+                value:
+                  statusCode: 200
+                  data:
+                    message: "No one has subscribed to the newsletter service."
+                    count: 0
+                  message: "Weekly news service has been triggered successfully."
+                  success: true
+              newsSent:
+                summary: Weekly newsletter sent successfully
+                value:
+                  statusCode: 200
+                  data:
+                    message: "Weekly newsletter sent successfully."
+                    subscribersCount: 24
+                  message: "Weekly news service has been triggered successfully."
+                  success: true
+              noContent:
+                summary: No new content available for this week
+                value:
+                  statusCode: 200
+                  data:
+                    message: "No new content to send this week."
+                    count: 0
+                  message: "Weekly news service has been triggered successfully."
+                  success: true
+              errorExample:
+                summary: Error occurred during process
+                value:
+                  statusCode: 500
+                  data:
+                    message: "Error from weekly news service."
+                    error: "MongoDB connection lost"
+                  message: "Weekly news service has been triggered successfully."
+                  success: false
+      "401":
+        description: Unauthorized (Invalid or missing token)
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              statusCode: 401
+              message: "invalid token"
+              success: false
+      "403":
+        description: Forbidden (User is not an admin)
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              statusCode: 403
+              message: "You do not have permission to perform this action"
+              success: false

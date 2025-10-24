@@ -1,0 +1,234 @@
+paths:
+  /api/checkout/pre:
+    post:
+      summary: Get pre-checkout information including cart total and items
+      tags: [Checkout]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pre-checkout data retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                statusCode: 200
+                data:
+                  cartTotal: 132.00
+                  items:
+                    - quantity: 2
+                      book:
+                        _id: "68e7ed98aa7000812ffe6213"
+                        title: "Machine Learning"
+                        author: "Marijn Haverbeke"
+                        price: 66.00
+                        stock: 16
+                message: "Pre-checkout information retrieved successfully"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        '404':
+          description: Cart not found or empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 404
+                message: "Cart is empty"
+                success: false
+
+  /api/checkout:
+    post:
+      summary: Create a checkout session with billing data and payment method
+      tags: [Checkout]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: >
+            Unique key (e.g., a UUID) sent by the client to prevent
+            duplicate request processing.
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                billingData:
+                  type: object
+                  properties:
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    email:
+                      type: string
+                      format: email
+                    phone:
+                      type: string
+                    country:
+                      type: string
+                    state:
+                      type: string
+                    city:
+                      type: string
+                  required:
+                    - firstName
+                    - lastName
+                    - email
+                    - phone
+                    - country
+                    - state
+                    - city
+                paymentMethod:
+                  type: string
+                  enum:
+                    - paymob
+              required:
+                - billingData
+                - paymentMethod
+            example:
+              billingData:
+                firstName: "John"
+                lastName: "Doe"
+                email: "john.doe@example.com"
+                phone: "+1234567890"
+                country: "Egypt"
+                state: "Cairo"
+                city: "Cairo"
+              paymentMethod: "paymob"
+      responses:
+        '200':
+          description: >
+            OK. Payment data retrieved successfully from cache 
+            (due to duplicate Idempotency-Key).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                statusCode: 200
+                data:
+                  paymentUrl: "https://accept.paymob.com/iframe/123456?payment_token=abc123"
+                  orderId: "68fa4979393014df759e7319"
+                message: "Payment retrieved successfully"
+        '201':
+          description: Created. Checkout session created successfully (new request).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                statusCode: 201
+                data:
+                  paymentUrl: "https://accept.paymob.com/iframe/123456?payment_token=abc123"
+                  orderId: "68fa4979393014df759e7319"
+                message: "Payment Url Received"
+        '400':
+          description: >
+            Bad Request (e.g., invalid billing data, or missing/invalid
+            Idempotency-Key header).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 400
+                message: "Idempotency-Key header is required."
+                success: false
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        '404':
+          description: Cart not found or empty
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 404
+                message: "Cart is empty"
+                success: false
+        '409':
+          description: Conflict (e.g., insufficient stock for an item)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 409
+                message: "Insufficient stock for book: \"Machine Learning\". Order rolled back."
+                success: false
+        '429':
+          description: >
+            Too Many Requests. The request is already being processed
+            (Idempotency-Key is locked as 'processing').
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 429
+                message: "Request is already processing. Please wait."
+                success: false
+
+  /api/checkout/webhook/{provider}:
+    post:
+      summary: Handle payment webhook from payment provider
+      tags: [Checkout]
+      parameters:
+        - in: path
+          name: provider
+          schema:
+            type: string
+            enum: [paymob]
+          required: true
+          description: The payment provider name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: The webhook payload structure varies by provider
+      responses:
+        '200':
+          description: Webhook processed successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Webhook received."
+        '400':
+          description: Bad Request (invalid webhook data or signature)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                statusCode: 400
+                message: "Invalid HMAC signature."
+                success: false
