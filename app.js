@@ -13,7 +13,7 @@ import featuresRouter from './src/routes/features.routes.js';
 import newsRouter from './src/routes/news.route.js';
 import cartRouter from './src/routes/cart.routes.js';
 import checkoutRouter from './src/routes/checkout.routes.js';
-import {createRateLimiter} from './src/middlewares/rateLimit.middleware.js'
+import { createRateLimiter } from './src/middlewares/rateLimit.middleware.js'
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
@@ -75,6 +75,8 @@ app.use("/api/news", newsRouter);
 app.use("/api/cart", isAuth, cartRouter);
 
 app.use("/api/checkout", checkoutRouter);
+
+app.use("/api", searchRoutes)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
