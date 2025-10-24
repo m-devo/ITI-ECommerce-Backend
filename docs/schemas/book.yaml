@@ -1,0 +1,36 @@
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "6718dfb1c2a4d83e21d9b456"
+        title:
+          type: string
+          example: "Clean Code"
+        author:
+          type: string
+          example: "Robert C. Martin"
+        description:
+          type: string
+          example: "A handbook of agile software craftsmanship."
+        price:
+          type: number
+          example: 19.99
+        genre:
+          type: string
+          example: "Programming"
+        language:
+          type: string
+          example: "English"
+        publishedDate:
+          type: string
+          format: date
+          example: "2008-08-11"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

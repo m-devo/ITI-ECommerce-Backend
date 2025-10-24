@@ -13,7 +13,7 @@ import featuresRouter from './src/routes/features.routes.js';
 import newsRouter from './src/routes/news.route.js';
 import cartRouter from './src/routes/cart.routes.js';
 import checkoutRouter from './src/routes/checkout.routes.js';
-import {createRateLimiter} from './src/middlewares/rateLimit.middleware.js'
+import { createRateLimiter } from './src/middlewares/rateLimit.middleware.js'
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
@@ -76,6 +76,8 @@ app.use("/api/cart", isAuth, cartRouter);
 
 app.use("/api/checkout", checkoutRouter);
 
+app.use("/api", searchRoutes)
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
   return res.status(404).json({
@@ -86,7 +88,7 @@ app.use((req, res, next) => {
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-app.use("/api", searchRoutes);
+
 
 app.get("/", (req, res) => res.send("Bookstore Search API Running..."));
 
@@ -98,6 +100,6 @@ app.get("/", (req, res) => res.send("Bookstore Search API Running..."));
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 ;

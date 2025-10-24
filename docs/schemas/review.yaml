@@ -1,0 +1,62 @@
+components:
+  schemas:
+Review:
+  type: object
+  properties:
+    _id:
+      type: string
+      example: "6717bdfb3c2f541b7f1b9a3e"
+    user:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "6717bdfb3c2f541b7f1b9a3f"
+        firstName:
+          type: string
+          example: "Areej"
+        email:
+          type: string
+          example: "areej@email.com"
+    book:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "6717bdfb3c2f541b7f1b9a40"
+        title:
+          type: string
+          example: "The Great Gatsby"
+        author:
+          type: string
+          example: "F. Scott Fitzgerald"
+    rating:
+      type: number
+      example: 4.5
+    comment:
+      type: string
+      example: "Loved the writing style and emotional depth."
+    audioUrl:
+      type: string
+      nullable: true
+      example: "uploads/17283473847-review.mp3"
+    transcription:
+      type: string
+      nullable: true
+      example: "The book was amazing, I really enjoyed it."
+    language:
+      type: string
+      example: "en"
+    createdAt:
+      type: string
+      format: date-time
+      example: "2025-10-22T12:34:56.789Z"
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2025-10-22T13:00:00.000Z"
+  required:
+    - user
+    - book
+    - rating
+    - comment

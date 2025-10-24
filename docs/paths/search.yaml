@@ -1,0 +1,96 @@
+/search:
+  get:
+    summary: Basic full-text search for books
+    tags:
+      - Search
+    parameters:
+      - in: query
+        name: query
+        schema:
+          type: string
+        required: true
+        description: Text to search within book titles or descriptions
+        example: "database"
+    responses:
+      "200":
+        description: Search results for books
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../schemas/book.yaml#/components/schemas/Book"
+      "400":
+        description: Missing query
+      "500":
+        description: Server error
+
+/search/suggest:
+  get:
+    summary: Suggest or autocomplete book titles
+    tags:
+      - Search
+    parameters:
+      - in: query
+        name: query
+        schema:
+          type: string
+        required: true
+        description: Partial text for autocomplete suggestions
+        example: "har"
+    responses:
+      "200":
+        description: List of suggested book titles
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: "Harry Potter"
+                  author:
+                    type: string
+                    example: "J.K. Rowling"
+      "400":
+        description: Missing query
+      "500":
+        description: Server error
+
+/search/facets:
+  get:
+    summary: Filter books by author and price range
+    tags:
+      - Search
+    parameters:
+      - in: query
+        name: author
+        schema:
+          type: string
+        required: false
+        example: "George Orwell"
+      - in: query
+        name: minPrice
+        schema:
+          type: number
+        required: false
+        example: 10
+      - in: query
+        name: maxPrice
+        schema:
+          type: number
+        required: false
+        example: 50
+    responses:
+      "200":
+        description: Filtered list of books
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "../schemas/book.yaml#/components/schemas/Book"
+      "500":
+        description: Server error
