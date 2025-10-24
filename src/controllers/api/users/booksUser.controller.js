@@ -34,7 +34,7 @@ export const getAllBooks = async (req, res) => {
       { 
         $project: { 
           reviews: 0, 
-          descrption: 0,
+          description: 0,
           __v: 0,
           stock:0,
           isDeleted:0

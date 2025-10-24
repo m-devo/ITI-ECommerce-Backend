@@ -1,0 +1,115 @@
+paths:
+  /api/report/thirtyDays:
+    get:
+      summary: Get the last 30 daily sales reports (Admin)
+      tags: [Reports]
+      description: >
+        Retrieves the last 30 daily sales reports.
+        Accessible only by admin users.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved the last 30 reports.
+          content:
+            application/json:
+              example:
+                statusCode: 200
+                data:
+                  reports:
+                    - date: "2025-10-15"
+                      totalSales: 2000
+                      totalOrders: 32
+                    - date: "2025-10-16"
+                      totalSales: 1850
+                      totalOrders: 28
+                message: "Last 30 reports retrieved successfully."
+                success: true
+        "401":
+          description: Unauthorized (Invalid or missing token)
+          content:
+            application/json:
+              example:
+                statusCode: 401
+                message: "Invalid or missing token"
+                success: false
+        "403":
+          description: Forbidden (User not admin)
+          content:
+            application/json:
+              example:
+                statusCode: 403
+                message: "You do not have permission to perform this action"
+                success: false
+
+  /api/report/latest:
+    get:
+      summary: Get the latest daily sales report (Admin)
+      tags: [Reports]
+      description: >
+        Retrieves the most recent generated daily report.
+        Accessible only by admin users.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Latest report retrieved successfully.
+          content:
+            application/json:
+              example:
+                statusCode: 200
+                data:
+                  report:
+                    date: "2025-10-23"
+                    totalSales: 2650
+                    totalOrders: 41
+                message: "Latest report retrieved successfully"
+                success: true
+        "404":
+          description: Report not found.
+          content:
+            application/json:
+              example:
+                statusCode: 404
+                message: "No report found"
+                success: false
+
+  /api/report/{date}:
+    get:
+      summary: Get a report by specific date (Admin)
+      tags: [Reports]
+      description: >
+        Retrieves a sales report for a specific date in `YYYY-MM-DD` format.
+        Accessible only by admin users.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: date
+          required: true
+          schema:
+            type: string
+          example: "2025-10-20"
+          description: Date of the report (YYYY-MM-DD)
+      responses:
+        "200":
+          description: Report for the specified date retrieved successfully.
+          content:
+            application/json:
+              example:
+                statusCode: 200
+                data:
+                  report:
+                    date: "2025-10-20"
+                    totalSales: 1900
+                    totalOrders: 30
+                message: "Report retrieved successfully."
+                success: true
+        "404":
+          description: Report not found for the given date.
+          content:
+            application/json:
+              example:
+                statusCode: 404
+                message: "Report not found for this date."
+                success: false

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
     validate: {
       validator: validator.isEmail,
       message: "this email is not a valid !",
@@ -25,7 +26,10 @@ const userSchema = new mongoose.Schema({
   pendingDeviceTokenExpires: { type: Date, default: null },
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
-  isSubscribedToNewsService: { type: Boolean },
-});
+  isSubscribedToNewsService: {type: Boolean, default: false},
+
+}, { timestamps: true });
+
+userSchema.index({ createdAt: -1 });
 
 export const User = mongoose.model("User", userSchema);

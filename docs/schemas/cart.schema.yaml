@@ -79,6 +79,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CartItemResponse'
+        lastUpdateAt:
+          type: string
+          format: date-time
+        reminderSent:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time

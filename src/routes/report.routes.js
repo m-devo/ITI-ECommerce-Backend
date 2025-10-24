@@ -1,27 +1,28 @@
 import express from "express";
 import reportController from "../controllers/api/report/report.controller.js"; 
-
+import protect from "../middlewares/protect.middleware.js";
+import restrictTo from "../middlewares/restrictTo.middleware.js";
 
 const reportRouter = express.Router();
 
 //for getting the last thirty reports
 reportRouter.get("/thirtyDays", 
 
-    // protect, 
-    // restrictTo("admin"),
+    protect, 
+    restrictTo("admin"),
     reportController.geLastThirtyDailyReports
 );
 
 reportRouter.get("/latest", 
-    // protect, 
-    // restrictTo("admin"),
+    protect, 
+    restrictTo("admin"),
     reportController.getLatestReport
 );
 
 //by date
 reportRouter.get("/:date", 
-    // protect, 
-    // restrictTo("admin"),
+    protect, 
+    restrictTo("admin"),
     reportController.DailyReport
 );
 
