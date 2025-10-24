@@ -18,6 +18,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
+import userProfileRouter from "./src/routes/userProfile.route.js"
 import path from "path";
 import "./src/services/stock.service.js";
 
@@ -72,6 +73,7 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
+app.use("/api/user", isAuth, userProfileRouter);
 app.use("/api/cart", isAuth, cartRouter);
 
 app.use("/api/checkout", checkoutRouter);
