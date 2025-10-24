@@ -203,9 +203,6 @@ export async function preCheckoutOrder(userId) {
         throw new ApiError(400, 'Cart is empty.');
     }
 
-    console.log(cart);
-
-
     let totalAmount = 0;
     let totalItems = 0;
     const orderItems = [];
