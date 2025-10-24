@@ -1,5 +1,6 @@
-import redisClient from '../../config/redis.js'; 
+import redisClient from '../../config/redis.js';
 import ApiError from '../utils/ApiError.js';
+import logger from '../../config/logger.js'
 
 const errorHandler = async (err, req, res, next) => {
     const { idempotencyKey } = res.locals;
@@ -19,6 +20,18 @@ const errorHandler = async (err, req, res, next) => {
     
     const resHasErrorStatus = typeof res.statusCode === 'number' && res.statusCode >= 400;
     const statusCode = err.statusCode || (resHasErrorStatus ? res.statusCode : 500);
+
+    // Log error to file using winston
+    logger.error({
+        message: err.message,
+        stack: err.stack,
+        statusCode: statusCode,
+        url: req.originalUrl,
+        method: req.method,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        timestamp: new Date().toISOString()
+    });
 
     if (process.env.NODE_ENV !== 'production') {
         console.error(err);
