@@ -6,12 +6,12 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: The user's cart retrieved successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse" # Assuming you have a standard wrapper
+                $ref: '#/components/schemas/ApiResponse' # Assuming you have a standard wrapper
               example:
                 statusCode: 200
                 data:
@@ -26,12 +26,12 @@ paths:
                         price: 66
                         stock: 16
                 message: "Cart retrieved successfully"
-        "401":
+        '401':
           description: Unauthorized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 statusCode: 401
                 message: "invalid token"
@@ -49,7 +49,7 @@ paths:
           application/json:
             schema:
               type: array
-              items:
+              items: 
                 type: object
                 properties:
                   bookId:
@@ -64,28 +64,28 @@ paths:
               - bookId: "68e817158483527382d205ea"
                 quantity: 0 # This will remove the book
       responses:
-        "200":
+        '200':
           description: Cart updated successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse" # Containing the updated Cart
-        "400":
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '400':
           description: Bad Request (e.g., out of stock)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 statusCode: 400
                 message: "Only 16 units of Machine Learning are available"
                 success: false
-        "404":
+        '404':
           description: Not Found (e.g., bookId does not exist)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 statusCode: 404
                 message: "Book not found"
@@ -104,20 +104,20 @@ paths:
             type: string
           required: true
           description: The ID of the book to increment.
-          example: "68e7ed98aa7000812ffe6213"
+          example: '68e7ed98aa7000812ffe6213'
       responses:
-        "200":
+        '200':
           description: Item quantity incremented successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse" # Containing the updated Cart
-        "400":
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '400':
           description: Bad Request (e.g., out of stock)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 statusCode: 400
                 message: "Only 16 units of Machine Learning are available"
@@ -136,20 +136,20 @@ paths:
             type: string
           required: true
           description: The ID of the book to decrement.
-          example: "68e7ed98aa7000812ffe6213"
+          example: '68e7ed98aa7000812ffe6213'
       responses:
-        "200":
+        '200':
           description: Item quantity decremented successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse" # Containing the updated Cart
-        "404":
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
+        '404':
           description: Not Found (e.g., item not in cart)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 statusCode: 404
                 message: "Item not found in cart"
@@ -168,14 +168,14 @@ paths:
             type: string
           required: true
           description: The ID of the book to remove.
-          example: "68e7ed98aa7000812ffe6213"
+          example: '68e7ed98aa7000812ffe6213'
       responses:
-        "200":
+        '200':
           description: Item removed from cart successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse" # Containing the updated Cart
+                $ref: '#/components/schemas/ApiResponse' # Containing the updated Cart
 
   /api/cart/clear:
     delete:
@@ -184,12 +184,12 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        "200":
+        '200':
           description: Cart cleared successfully.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                $ref: '#/components/schemas/ApiResponse'
               example:
                 statusCode: 200
                 data:
@@ -197,69 +197,3 @@ paths:
                   userId: "68eaae855274aeb09fa23a2e"
                   items: []
                 message: "Cart cleared successfully"
-
-/api/cart/abandoned-cart:
-  post:
-    summary: Trigger abandoned cart reminders (Admin)
-    tags: [Cart]
-    description: >
-      Manually triggers the service to find all carts that have been inactive 
-      (between 1 and 4 days old) and sends a reminder email to the user.
-      This endpoint is restricted to users with the 'admin' role.
-    security:
-      - bearerAuth: []
-    responses:
-      "200":
-        description: The reminder process executed successfully.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponse"
-            examples:
-              noAbandonedCarts:
-                summary: No abandoned carts found
-                value:
-                  statusCode: 200
-                  data:
-                    message: "No abandoned carts to remind."
-                    count: 0
-                  message: "Abandoned cart reminder process completed."
-                  success: true
-              remindersSent:
-                summary: Some abandoned carts were found and emails sent
-                value:
-                  statusCode: 200
-                  data:
-                    message: "Abandoned cart reminders sent successfully."
-                    count: 3
-                  message: "Abandoned cart reminder process completed."
-                  success: true
-              errorExample:
-                summary: Error occurred during process
-                value:
-                  statusCode: 500
-                  data:
-                    message: "Error in AbandonedCartReminder job."
-                    error: "MongoDB connection lost"
-                  message: "Abandoned cart reminder process completed."
-                  success: false
-      "401":
-        description: Unauthorized (Invalid or missing token)
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            example:
-              statusCode: 401
-              message: "invalid token"
-              success: false
-      "403":
-        description: Forbidden (User is not an admin)
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            example:
-              statusCode: 403
-              message: "You do not have permission to perform this action"
-              success: false
