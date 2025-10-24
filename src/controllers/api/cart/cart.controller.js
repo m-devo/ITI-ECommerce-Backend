@@ -46,10 +46,10 @@ export const CartController = {
     }),
 
     AbandonedCartReminder: catchAsync(async (req, res, next) => {
-        await CartService.AbandonedCartReminder();
+        const result  = await CartService.AbandonedCartReminder();
 
         res.status(200).json(
-            new ApiResponse(200, null, "Abandoned cart reminder process was triggered successfully.")
+            new ApiResponse(200, result, "Abandoned cart reminder process was triggered successfully.")
         );
     })
 };

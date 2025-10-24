@@ -19,18 +19,22 @@ const cartSchema = new mongoose.Schema({
             min: [1, 'Quantity can not be less than 1.'],
             default: 1
         }
-    }]
-    }, {
-        timestamps: true
-})
+    }],
+    reminderSent: {
+        type: Boolean,
+        default:false
+    }
+}, {
+    timestamps: true
+});
+
+cartSchema.index({ reminderSent: 1, updatedAt: 1 });
 
 cartSchema.pre("save", function(next) {
-        if(this.isModified("items")) {
-            this.lastUpdateAt = new Date();
-            this.reminderSent = false
+    if (this.isModified("items")) {
+        this.reminderSent = false;
     }
-    next()
-    
-})
+    next();
+});
 
 export const Cart = mongoose.model("Cart", cartSchema);

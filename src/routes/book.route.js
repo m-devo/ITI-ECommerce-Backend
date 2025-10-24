@@ -10,6 +10,7 @@ import { validateBookUpload } from "../middlewares/validateBookFields.js";
 import { upload_field, validateAndSaveFiles } from "../middlewares/storage.middleware.js";
 import restrictTo from '../middlewares/restrictTo.middleware.js';
 import protect from "../middlewares/protect.middleware.js";
+import { verifyToken } from "../middlewares/auth.middleware.js"
 
 import { validateBookUpdate } from "../middlewares/updateValidation.middleware.js"
 import { verify } from "crypto";
@@ -27,6 +28,7 @@ bookRouter.delete('/delete/:ID', protect, restrictTo('admin'), deleteBook)
 
 bookRouter.post(
   "/create",
+  verifyToken,
   protect, restrictTo('admin', 'author'),
   upload_field,
   validateBookUpload,

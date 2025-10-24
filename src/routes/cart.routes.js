@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { CartController } from '../controllers/api/cart/cart.controller.js';
 import { updateBookSchema, bookIdParamSchema } from '../validations/cart.validation.js';
 import { validate } from '../middlewares/validate.middleware.js';
+import protect from '../middlewares/protect.middleware.js';
+import restrictTo from '../middlewares/restrictTo.middleware.js';
 
 const router = Router();
 
@@ -12,6 +14,6 @@ router.put('/items/:bookId/decrement', validate(bookIdParamSchema), CartControll
 router.delete('/items/:bookId', validate(bookIdParamSchema), CartController.removeItemFromCart);
 router.delete('/clear', CartController.clearCart);
 
-router.post('/abandoned-cart', CartController.AbandonedCartReminder);
+router.post('/abandoned-cart', protect, restrictTo('admin'), CartController.AbandonedCartReminder);
 
 export default router;

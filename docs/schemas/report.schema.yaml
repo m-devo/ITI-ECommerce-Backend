@@ -1,0 +1,46 @@
+components:
+  schemas:
+    Report:
+      type: object
+      description: "A daily sales report summary."
+      properties:
+        _id:
+          type: string
+          description: "The unique ID of the report."
+          example: "68eb123456789abcdef99999"
+        reportDate:
+          type: string
+          format: date-time
+          description: "The specific date (at midnight) this report is for."
+          example: "2025-10-22T00:00:00.000Z"
+        totalRevenue:
+          type: number
+          format: float
+          description: "Total revenue generated on the report date."
+          example: 15000.75
+        totalOrders:
+          type: integer
+          description: "Total number of 'paid' orders on the report date."
+          example: 40
+        newUserCount:
+          type: integer
+          description: "Number of new user signups on the report date."
+          example: 10
+        bestSellingBooks:
+          type: array
+          description: "A list of best-selling books for the report date."
+          items:
+            type: object
+            properties:
+              book:
+                $ref: '#/components/schemas/Book'
+              unitsSold:
+                type: integer
+                description: "Total units sold for this book on the report date."
+                example: 50
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

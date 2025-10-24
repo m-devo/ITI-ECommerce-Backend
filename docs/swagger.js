@@ -23,7 +23,7 @@ const options = {
     // Path to the API docs
     apis: [
         './docs/paths/*.yaml', 
-        './docs/schemas/*.yaml'
+        './docs/schemas/*.yaml',
     ],
 };
 
