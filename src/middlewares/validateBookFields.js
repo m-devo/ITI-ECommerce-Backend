@@ -3,13 +3,13 @@
 import Book from '../models/bookSchema.js';
 
 const validateBookUpload = async (req, res, next) => {
-    const { title, author, price, stock, descrption } = req.body;
+    const { title, author, price, stock, description } = req.body;
     const bookFile = req.files?.book?.[0];
     const imageFile = req.files?.image?.[0];
 
     const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024; // 6GB
     const errors = [];
-    if (!descrption) errors.push('Description is required');
+    if (!description) errors.push('Description is required');
     if (!title) errors.push('Title is required');
     if (!author) errors.push('Author is required');
     if (!price) errors.push('Price is required');
