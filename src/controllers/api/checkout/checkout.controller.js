@@ -21,7 +21,10 @@ export const CheckoutController = {
         
         const order = await orderService.createOrderFromCart(userId, billingData, paymentMethod);
 
-        console.log('her');
+        if (paymentMethod == "cod") {
+            return  res.status(201).json(new ApiResponse(201, null, "Order Created"));
+        }
+
 
         const paymentUrl = await paymentService.createPaymentIntent(order, paymentMethod);
 
@@ -38,7 +41,7 @@ export const CheckoutController = {
             });
         }
 
-        res.status(201).json(new ApiResponse(200, {paymentUrl: paymentUrl} , "Payment Url Received"));
+        res.status(201).json(new ApiResponse(201, {paymentUrl: paymentUrl} , "Payment Url Received"));
     }),
 
     handlePaymentWebhook: catchAsync(async (req, res) => {
