@@ -39,13 +39,13 @@ components:
       properties:
         _id:
           type: string
-          example: "68e7ed98aa7000812ffe6213"
+          example: '68e7ed98aa7000812ffe6213'
         title:
           type: string
-          example: "Machine Learning"
+          example: 'Machine Learning'
         author:
           type: string
-          example: "Marijn Haverbeke"
+          example: 'Marijn Haverbeke'
         price:
           type: number
           example: 66
@@ -61,7 +61,7 @@ components:
           type: integer
           example: 2
         book:
-          $ref: "#/components/schemas/Book"
+          $ref: '#/components/schemas/Book'
 
     # The main Cart object response
     Cart:
@@ -78,7 +78,13 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/CartItemResponse"
+            $ref: '#/components/schemas/CartItemResponse'
+        lastUpdateAt:
+          type: string
+          format: date-time
+        reminderSent:
+          type: boolean
+          default: false
         createdAt:
           type: string
           format: date-time
