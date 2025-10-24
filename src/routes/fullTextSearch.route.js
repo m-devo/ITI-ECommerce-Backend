@@ -4,7 +4,7 @@ import { searchBooks, suggestBooks, facetSearch } from "./../controllers/search/
 const router = express.Router();
 
 // 1. Basic Text Search
-router.get("/", searchBooks);
+router.get("/search", searchBooks);
 
 // 2. Suggestions / Autocomplete
 router.get("/suggest", suggestBooks);

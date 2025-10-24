@@ -59,6 +59,7 @@ app.use("/api/features", featuresRouter);
 app.use("/api/news", newsRouter);
 
 app.use("/api/carts", cartRouter)
+app.use("/api", searchRoutes);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
@@ -73,7 +74,7 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 ////////////////////////////////////////////////////////////////////////////////////////
-app.use("/api", searchRoutes);
+
 
 app.get("/", (req, res) => res.send("Bookstore Search API Running..."));
 
