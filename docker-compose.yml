@@ -28,7 +28,7 @@ services:
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
     depends_on:
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
       redis:
         condition: service_started
     volumes:
@@ -84,6 +84,11 @@ services:
     tmpfs:
       - /tmp
       - /var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
