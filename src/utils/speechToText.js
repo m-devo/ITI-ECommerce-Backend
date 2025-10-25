@@ -12,7 +12,7 @@ export async function transcribeAudio(audioPath) {
       audioData,
       {
         headers: {
-          Authorization: 'Token e7d226f864b59db1613fe7e15c501dc68a3b98ce',
+          Authorization: `Token ${process.env.DEEPGRAM_KEY}`,
           "Content-Type": "audio/mp4",
         },
       }
