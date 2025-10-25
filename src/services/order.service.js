@@ -47,7 +47,7 @@ export const getOrdersService = async (query) => {
   };
 };
 
-const updateOrderService = async (orderId, updateData) => {
+export const updateOrderService = async (orderId, updateData) => {
   if (!mongoose.Types.ObjectId.isValid(orderId)) {
     throw new ApiError(400, "Invalid order ID");
   }

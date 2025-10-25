@@ -82,7 +82,7 @@ app.use("/api/cart", isAuth, cartRouter);
 
 app.use("/api/checkout", checkoutRouter);
 
-app.use("/api", searchRoutes)
+app.use("/api/search", searchRoutes)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use((req, res, next) => {
