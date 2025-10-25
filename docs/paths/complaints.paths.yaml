@@ -1,0 +1,230 @@
+paths:
+  /api/complaints:
+    get:
+      summary: Get all complaints (Admin)
+      tags: [Complaints]
+      description: Retrieves a paginated list of complaints. Requires admin privileges. Supports filtering by status.
+      security:
+        - bearerAuth: [] # Indicates JWT token is required
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of complaints per page.
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [new, in_progress, resolved, closed]
+          description: Filter complaints by status.
+      responses:
+        "200":
+          description: A list of complaints retrieved successfully.
+          content:
+            application/json:
+              schema:
+                allOf: # Combine standard response with specific data
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ComplaintsResponseData' # Use the pagination data schema
+                      message:
+                        example: "Complaints retrieved successfully"
+        "401":
+          description: Unauthorized (Invalid or missing token)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "403":
+          description: Forbidden (User is not an admin)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 403
+                message: "You do not have permission to perform this action"
+                success: false
+
+  /api/complaints/{id}:
+    get:
+      summary: Get a specific complaint by ID (Admin)
+      tags: [Complaints]
+      description: Retrieves the details of a single complaint, including user information and replies. Requires admin privileges.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the complaint to retrieve.
+          example: "68fce2b67914864105e1625c"
+      responses:
+        "200":
+          description: Complaint details retrieved successfully.
+          content:
+            application/json:
+              schema:
+                allOf: # Combine standard response with specific data
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          complaint:
+                            $ref: '#/components/schemas/Complaint' # Reference the main Complaint schema
+                      message:
+                        example: "Complaint retrieved successfully"
+        "400":
+          description: Bad Request (Invalid ID format)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 400
+                message: "Invalid complaint ID format"
+                success: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 403
+                message: "You do not have permission to perform this action"
+                success: false
+        "404":
+          description: Not Found (Complaint with the specified ID does not exist)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: "Complaint not found"
+                success: false
+
+  /api/complaints/{id}/reply:
+    post:
+      summary: Reply to a complaint (Admin)
+      tags: [Complaints]
+      description: Adds an admin reply to a specific complaint, updates its status to 'resolved', and attempts to notify the user via WebSocket if connected. Requires admin privileges.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the complaint to reply to.
+          example: "68fce2b67914864105e1625c"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replyMessage:
+                  type: string
+                  description: The content of the admin's reply.
+              required:
+                - replyMessage
+            example:
+              replyMessage: "We have processed your request and issued a refund."
+      responses:
+        "200":
+          description: Reply added successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          complaint:
+                            $ref: '#/components/schemas/Complaint' # Returns the updated complaint object
+                      message:
+                        example: "Reply added successfully"
+        "400":
+          description: Bad Request (e.g., missing replyMessage or invalid ID format)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingMessage:
+                  summary: Missing reply message
+                  value:
+                    statusCode: 400
+                    message: "Reply message is required"
+                    success: false
+                invalidId:
+                  summary: Invalid ID format
+                  value:
+                    statusCode: 400
+                    message: "Invalid complaint ID format"
+                    success: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 403
+                message: "You do not have permission to perform this action"
+                success: false
+        "404":
+          description: Not Found (Complaint with the specified ID does not exist)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: "Complaint not found"
+                success: false

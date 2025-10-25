@@ -1,5 +1,4 @@
 paths:
-
   /api/admin/book/allBooks:
     get:
       summary: Get all books
@@ -215,7 +214,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 
   /api/admin/book/delete/{ID}:
     delete:
