@@ -97,7 +97,7 @@ app.use("/api/checkout", checkoutRouter);
 
 app.use("/api/complaints/", complaintsRouter)
 
-app.use("/api", searchRoutes)
+app.use("/api/search", searchRoutes)
 
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
