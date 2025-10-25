@@ -1,4 +1,4 @@
-/reviews/add:
+/api/reviews/add:
   post:
     summary: Create a new review (text or audio)
     tags:
@@ -35,7 +35,7 @@
             schema:
               $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/book/{bookId}:
+/api/reviews/book/{bookId}:
   get:
     summary: Get all reviews for a specific book
     tags:
@@ -57,7 +57,7 @@
               items:
                 $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/user/{userId}:
+/api/reviews/user/{userId}:
   get:
     summary: Get all reviews by a specific user
     tags:
@@ -79,7 +79,7 @@
               items:
                 $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/edit/{id}:
+/api/reviews/edit/{id}:
   put:
     summary: Update a review
     tags:
@@ -114,7 +114,7 @@
             schema:
               $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/delete/{id}:
+/api/reviews/delete/{id}:
   delete:
     summary: Delete a review (by owner or admin)
     tags:
