@@ -15,13 +15,14 @@ const getOrders = catchAsync(async (req, res, next) => {
     ? "Orders fetched successfully"
     : "No orders found";
 
-  res.status(200).json(new ApiResponse(200, data, message));
+  res.status(data.orders.length ? 200 : 404).json(new ApiResponse(200, data, message));
 });
 
 const updateOrder = catchAsync(async (req, res, next) => {
   const { id } = req.params; 
   const updateData = req.body; 
 
+  
   const updatedOrder = await updateOrderService(id, updateData);
 
   if (!updatedOrder) {

@@ -47,16 +47,29 @@ export const getOrdersService = async (query) => {
   };
 };
 
-
-export const updateOrderService = async (orderId, updateData) => {
-  const order = await Order.findById(orderId);
-
-  if (!order) {
-    return null; 
+const updateOrderService = async (orderId, updateData) => {
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new ApiError(400, "Invalid order ID");
   }
 
-  Object.assign(order, updateData);
+  const allowedFields = ["status"]; 
+  const filteredData = {};
 
+  for (const key of allowedFields) {
+    if (updateData[key] !== undefined) {
+      filteredData[key] = updateData[key];
+    }
+  }
+
+  if (Object.keys(filteredData).length === 0) {
+    throw new ApiError(400, "No valid fields to update");
+  }
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return null;
+  }
+
+  Object.assign(order, filteredData);
   const updatedOrder = await order.save();
 
   return updatedOrder;
