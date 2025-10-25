@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import connectDB from "./config/db.js";
 import { redisConnection } from "./config/redis.js";
+import { connectRabbitMQ } from "./config/rabbitmq.js";
 import passport from "./config/passport.js";
 import { isAuth } from "./src/middlewares/isAuth.middleware.js"
 import errorHandler from './src/middlewares/error.middleware.js';
@@ -28,11 +29,14 @@ import "./src/jobs/weeklyNews.job.js";
 import "./src/jobs/abandonedCart.job.js";
 import reviewRoutes from "./src/routes/review.routes.js";
 import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js"
+import { consumeEmailQueue } from "./src/utils/orderEmailQueue.js";
 import { fileURLToPath } from "url";
 const app = express();
 const PORT = process.env.PORT || 4000;
 connectDB();
 redisConnection(); // opening redis connection
+await connectRabbitMQ(); // connecting to RabbitMQ
+await consumeEmailQueue(); // start email consumer
 startOrdersReconciliationCron();
 
 app.set('trust proxy', 1);
