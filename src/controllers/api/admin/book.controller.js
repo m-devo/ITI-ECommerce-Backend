@@ -23,7 +23,7 @@ const getBooks  = catchAsync(async (req, res, next) => {
     if (maxPrice) filter.price.$lte = Number(maxPrice);
   }
 
-  const books = await Book.find(filter, { "__v": 0 })
+  const books = await Book.find(filter, { "__v": 0,"descriptionVector":0,"recomendedBooks":0 })
     .limit(parseInt(limit))
     .skip(parseInt(skip));
 

@@ -2,6 +2,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import ApiError from "../utils/ApiError.js";
+import { uploadToS3 } from "../utils/uploadToS3.js"; 
+
 
 const storage = multer.memoryStorage();
 
@@ -45,22 +47,25 @@ const upload_field = (req, res, next) => {
   });
 };
 
-const validateAndSaveFiles = (req, res, next) => {
+
+const validateAndSaveFiles = async (req, res, next) => {
   try {
     const imageFile = req.files?.image?.[0];
     const bookFile = req.files?.book?.[0];
-     if (!imageFile) {
+
+    if (!imageFile) {
       return res.status(400).json({
         statusCode: 400,
         success: false,
-        message: "Image file is required"
+        message: "Image file is required",
       });
     }
-     if (!bookFile) {
+
+    if (!bookFile) {
       return res.status(400).json({
         statusCode: 400,
         success: false,
-        message: "Book file is required"
+        message: "Book file is required",
       });
     }
 
@@ -68,31 +73,33 @@ const validateAndSaveFiles = (req, res, next) => {
       return res.status(400).json({
         statusCode: 400,
         success: false,
-        message: "Both image and book files are required"
+        message: "Both image and book files are required",
       });
     }
 
-    const saveFile = (buffer, folder, originalname) => {
-      fs.mkdirSync(folder, { recursive: true });
-      const cleanName = originalname.replace(/\s+/g, "_");
-      const filename = `${Date.now()}-${cleanName}`;
-      const filePath = path.join(folder, filename);
-      fs.writeFileSync(filePath, buffer);
-      return filePath;
-    };
+    const imageUrl = await uploadToS3(
+      imageFile.buffer,
+      imageFile.originalname,
+      "images"
+    );
 
-    const imagePath = saveFile(imageFile.buffer, "public/images", imageFile.originalname);
-    const bookPath = saveFile(bookFile.buffer, "uploads/books", bookFile.originalname);
+    const bookUrl = await uploadToS3(
+      bookFile.buffer,
+      bookFile.originalname,
+      "books"
+    );
 
-    req.savedFiles = { imagePath, bookPath };
-    next();
+    req.savedFiles = { imagePath: imageUrl, bookPath: bookUrl };
+
+    next(); 
   } catch (err) {
     return res.status(500).json({
       statusCode: 500,
       success: false,
-      message: err.message || "Error saving files"
+      message: err.message || "Error uploading files to S3",
     });
   }
 };
+
 
 export { upload_field, validateAndSaveFiles };
