@@ -1,5 +1,5 @@
 paths:
-  /api/userProfile/profile:
+  /api/user/profile:
     get:
       summary: Get user profile
       description: Retrieve the authenticated user's profile information
@@ -34,7 +34,7 @@ paths:
                 success: false
 
 
-  /api/userProfile/orders:
+  /api/user/orders:
     get:
       summary: Get user orders
       description: Retrieve the authenticated user's order history
@@ -70,7 +70,7 @@ paths:
                 message: "invalid token"
                 success: false
 
-  /api/userProfile/books:
+  /api/user/books:
     get:
       summary: Get user books
       description: Retrieve the books purchased by the authenticated user
