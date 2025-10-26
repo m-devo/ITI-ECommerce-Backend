@@ -1,133 +1,144 @@
-/api/reviews/add:
-  post:
-    summary: Create a new review (text or audio)
-    tags:
-      - Reviews
-    security:
-      - BearerAuth: []
-    requestBody:
-      required: true
-      content:
-        multipart/form-data:
+paths:
+  /api/reviews/add:
+    post:
+      summary: Create a new review (text or audio)
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                book:
+                  type: string
+                  example: "670bc82349a4d12bfc123456"
+                rating:
+                  type: integer
+                  example: 5
+                comment:
+                  type: string
+                  example: "Amazing book!"
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                book:
+                  type: string
+                  example: "670bc82349a4d12bfc123456"
+                rating:
+                  type: integer
+                  example: 5
+                comment:
+                  type: string
+                  example: "Amazing book!"
+                audio:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /api/reviews/book/{bookId}:
+    get:
+      summary: Get all reviews for a specific book
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: bookId
           schema:
-            type: object
-            properties:
-              user:
-                type: string
-                example: "670bc8123a5e9a12f097c222"
-              book:
-                type: string
-                example: "670bc82349a4d12bfc123456"
-              rating:
-                type: integer
-                example: 5
-              comment:
-                type: string
-                example: "Amazing book!"
-              audio:
-                type: string
-                format: binary
-    responses:
-      "201":
-        description: Review created successfully
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/review.yaml#/components/schemas/Review"
+            type: string
+          required: true
+          description: ID of the book
+      responses:
+        "200":
+          description: List of reviews for this book
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
 
-/api/reviews/book/{bookId}:
-  get:
-    summary: Get all reviews for a specific book
-    tags:
-      - Reviews
-    parameters:
-      - in: path
-        name: bookId
-        schema:
-          type: string
-        required: true
-        description: ID of the book
-    responses:
-      "200":
-        description: List of reviews for this book
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "../schemas/review.yaml#/components/schemas/Review"
-
-/api/reviews/user/{userId}:
-  get:
-    summary: Get all reviews by a specific user
-    tags:
-      - Reviews
-    parameters:
-      - in: path
-        name: userId
-        schema:
-          type: string
-        required: true
-        description: ID of the user
-    responses:
-      "200":
-        description: List of user’s reviews
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: "../schemas/review.yaml#/components/schemas/Review"
-
-/api/reviews/edit/{id}:
-  put:
-    summary: Update a review
-    tags:
-      - Reviews
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-        description: Review ID
-    requestBody:
-      required: true
-      content:
-        application/json:
+  /api/reviews/user/{userId}:
+    get:
+      summary: Get all reviews by a specific user
+      tags:
+        - Reviews
+      parameters:
+        - in: path
+          name: userId
           schema:
-            type: object
-            properties:
-              rating:
-                type: integer
-                example: 4
-              comment:
-                type: string
-                example: "Updated review text"
-    responses:
-      "200":
-        description: Review updated successfully
+            type: string
+          required: true
+          description: ID of the user
+      responses:
+        "200":
+          description: List of user’s reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+
+  /api/reviews/edit/{id}:
+    put:
+      summary: Update a review
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Review ID
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "../schemas/review.yaml#/components/schemas/Review"
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  example: 4
+                comment:
+                  type: string
+                  example: "Updated review text"
+      responses:
+        "200":
+          description: Review updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
 
-/api/reviews/delete/{id}:
-  delete:
-    summary: Delete a review (by owner or admin)
-    tags:
-      - Reviews
-    security:
-      - BearerAuth: []
-    parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-        description: Review ID
-    responses:
-      "200":
-        description: Review deleted successfully
+  /api/reviews/delete/{id}:
+    delete:
+      summary: Delete a review (by owner or admin)
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: Review ID
+      responses:
+        "200":
+          description: Review deleted successfully
