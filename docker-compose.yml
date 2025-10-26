@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URL=${MONGO_URL}
+      - PORT=4000
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - BASE_URL=${BASE_URL}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - PAYMOB_API_KEY=${PAYMOB_API_KEY}
+      - PAYMOB_INTEGRATION_ID=${PAYMOB_INTEGRATION_ID}
+      - PAYMOB_IFRAME_ID=${PAYMOB_IFRAME_ID}
+      - PAYMOB_HMAC_SECRET=${PAYMOB_HMAC_SECRET}
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - uploads:/app/uploads
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # mongodb:
+  #   image: mongo:7-jammy
+  #   ports:
+  #     - "27017:27017"
+  #     environment:
+  #       - MONGO_INITDB_ROOT_USERNAME=admin
+  #       - MONGO_INITDB_ROOT_PASSWORD=password
+  #       - MONGO_INITDB_DATABASE=nodejs-ebook
+  #     volumes:
+  #       - mongodb_data:/data/db
+  #       - ./src/seeders:/docker-entrypoint-initdb.d
+  #     networks:
+  #       - app-network
+  #     restart: unless-stopped
+  #     healthcheck:
+  #       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #       interval: 10s
+  #       timeout: 5s
+  #       retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      # - "5672:5672"
+      # - "15672:15672"  # Only expose in development if needed
+      - "127.0.0.1:15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_VHOST=/
+      # Disable guest user for security
+      - RABBITMQ_DISALLOW_UNSUPPORTED=1
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,info}] disk_free_limit 2147483648
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      # Mount custom config for additional security settings
+      # - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Security hardening
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/log/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    # ports:
+    #   - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  mongodb_data:
+  redis_data:
+  rabbitmq_data:
+  uploads:
+
+networks:
+  app-network:
+    driver: bridge

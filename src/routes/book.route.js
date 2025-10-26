@@ -15,7 +15,7 @@ import { verifyToken } from "../middlewares/auth.middleware.js"
 import { validateBookUpdate } from "../middlewares/updateValidation.middleware.js"
 import { verify } from "crypto";
 const bookRouter = express.Router();
-bookRouter.get('/allBooks', getBooks)
+bookRouter.get('/allBooks',protect,restrictTo('admin') ,getBooks)
 bookRouter.get('/oneBook/:ID', protect, restrictTo('admin'), getOneBook)
 bookRouter.patch('/update/:ID', verifyToken, protect,
   restrictTo('admin'),

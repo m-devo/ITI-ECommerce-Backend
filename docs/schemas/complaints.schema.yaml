@@ -1,0 +1,129 @@
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 200
+        data:
+          type: object
+          nullable: true
+        message:
+          type: string
+          nullable: true
+          example: "Complaints retrieved successfully"
+        success:
+          type: boolean
+          default: true
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+          example: 404
+        message:
+          type: string
+          example: "Complaint not found"
+        success:
+          type: boolean
+          example: false
+
+    ComplaintUser:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "68fce1027914864105e16253"
+        firstName:
+          type: string
+          example: "mohamed"
+        lastName:
+          type: string
+          example: "ahmed"
+        email:
+          type: string
+          format: email
+          example: "greatwall905@gmail.com"
+
+    ComplaintReplySender:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "68f93d476c152d1cb779601b"
+        firstName:
+          type: string
+          example: "Admin"
+        lastName:
+          type: string
+          example: "User"
+        email:
+          type: string
+          format: email
+          example: "admin@example.com"
+        role:
+          type: string
+          example: "admin"
+
+    ComplaintReply:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "69abcdef1234567890fedcba"
+        sender:
+          $ref: '#/components/schemas/ComplaintReplySender'
+        message:
+          type: string
+          example: "Your issue has been resolved."
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-25T15:30:00.000Z"
+
+    Complaint:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "68fce2b67914864105e1625c"
+        user:
+          $ref: '#/components/schemas/ComplaintUser'
+        details:
+          type: string
+          example: "I have a ruined book"
+        order:
+          type: string
+          nullable: true
+          example: "68faaaaaaaaaaaaaaaaaaaa1"
+        status:
+          type: string
+          enum: ["new", "in_progress", "resolved", "closed"]
+          default: "new"
+          example: "new"
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplaintReply'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-25T14:46:14.026Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-25T14:46:14.026Z"
+        __v:
+          type: integer
+          example: 0
+
+    ComplaintsResponseData:
+      type: object
+      properties:
+        complaints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Complaint'

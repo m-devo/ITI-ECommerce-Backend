@@ -5,7 +5,7 @@ const validateBookUpdate = async (req, res, next) => {
   const bookFile = req.files?.book?.[0];
   const imageFile = req.files?.image?.[0];
 
-  const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024; // 6GB
+  const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024;
   const errors = [];
 
   if (title !== undefined && !title.trim())
@@ -28,9 +28,9 @@ const validateBookUpdate = async (req, res, next) => {
   }
 
   if (bookFile && bookFile.size > MAX_FILE_SIZE)
-    errors.push('Book file size exceeds 6GB');
+    errors.push('Book file size exceeds 15GB');
   if (imageFile && imageFile.size > MAX_FILE_SIZE)
-    errors.push('Image file size exceeds 6GB');
+    errors.push('Image file size exceeds 15GB');
 
   if (title && author) {
     const existingBook = await Book.findOne({ title, author });

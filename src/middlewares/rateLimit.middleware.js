@@ -8,11 +8,6 @@ const rateLimitHandler = (req, res, next, options) => {
 };
 
 
-const secureKeyGenerator = (req) => {
-    const ip = req.ip || 'unknown-ip';
-    return `ip-${ip.replace(/:/g, '_').replace(/\./g, '_')}`;
-};
-
 
 export function createRateLimiter() {
     const limiterStore = new RedisStore({
@@ -25,7 +20,7 @@ export function createRateLimiter() {
         windowMs: 15 * 60 * 1000, // 15 m
         max: 100,
         message: 'Too many requests, please try again after 15 minutes.',
-        keyGenerator: secureKeyGenerator,
+        keyGenerator: ipKeyGenerator,
         handler: rateLimitHandler,
         standardHeaders: true,
         legacyHeaders: false,

@@ -7,7 +7,7 @@ const validateBookUpload = async (req, res, next) => {
     const bookFile = req.files?.book?.[0];
     const imageFile = req.files?.image?.[0];
 
-    const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024; // 6GB
+    const MAX_FILE_SIZE = 15 * 1024 * 1024 * 1024; 
     const errors = [];
     if (!description) errors.push('Description is required');
     if (!title) errors.push('Title is required');
@@ -21,9 +21,9 @@ const validateBookUpload = async (req, res, next) => {
         errors.push('Stock must be a positive number');
 
     if (bookFile && bookFile.size > MAX_FILE_SIZE)
-        errors.push('Book file size exceeds 6GB');
+        errors.push('Book file size exceeds 15GB');
     if (imageFile && imageFile.size > MAX_FILE_SIZE)
-        errors.push('Image file size exceeds 6GB');
+        errors.push('Image file size exceeds 15GB');
 
 
     if (title && author) {

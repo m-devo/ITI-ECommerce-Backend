@@ -12,14 +12,12 @@ const bookSchema = new mongoose.Schema({
       averageRating: { type: Number, default: 0 },
       featuredAt: { type: Date, index: true },
       reviewCount: { type: Number, default: 0 },
-      recomendedBooks: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Book"
-      }],
-      descriptionVector: {
-            type: [Number]
-      },
       isDeleted: { type: Boolean, default: false }
 }, { timestamps: true })
+
+// add index areej
+bookSchema.index({ title: "text", description: "text", category: "text", author: "text" });
+
+bookSchema.index({ averageRating: -1, reviewCount: -1 });
 
 export default mongoose.model('Book', bookSchema);

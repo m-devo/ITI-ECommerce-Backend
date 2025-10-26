@@ -1,4 +1,4 @@
-/search:
+/api/search:
   get:
     summary: Basic full-text search for books
     tags:
@@ -19,13 +19,13 @@
             schema:
               type: array
               items:
-                $ref: "../schemas/book.yaml#/components/schemas/Book"
+                $ref: "#/components/schemas/Book"
       "400":
         description: Missing query
       "500":
         description: Server error
 
-/search/suggest:
+/api/search/suggest:
   get:
     summary: Suggest or autocomplete book titles
     tags:
@@ -59,7 +59,7 @@
       "500":
         description: Server error
 
-/search/facets:
+/api/search/facets:
   get:
     summary: Filter books by author and price range
     tags:
@@ -91,6 +91,6 @@
             schema:
               type: array
               items:
-                $ref: "../schemas/book.yaml#/components/schemas/Book"
+                $ref: "#/components/schemas/Book"
       "500":
         description: Server error

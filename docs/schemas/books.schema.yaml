@@ -71,20 +71,6 @@ components:
           description: The total number of reviews for this book
           example: 14
 
-        recomendedBooks:
-          type: array
-          description: List of recommended book IDs related to this one
-          items:
-            type: string
-            example: "670fcfcb54425c6a18d1e5aa"
-
-        descriptionVector:
-          type: array
-          description: Numerical vector representation of the description
-          items:
-            type: number
-          example: [0.12, 0.48, 0.33, 0.91]
-
         isDeleted:
           type: boolean
           description: Indicates whether the book is deleted
