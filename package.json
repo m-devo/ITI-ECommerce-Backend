@@ -42,6 +42,7 @@
     "passport-google-oauth20": "^2.0.0",
     "rate-limit-redis": "^4.2.3",
     "redis": "^5.8.3",
+    "redis-server": "^1.2.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0",
