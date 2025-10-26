@@ -5,11 +5,11 @@ import { CartService } from "./cart.service.js";
 import bookSchema from "../models/bookSchema.js";
 import { sendEmailToQueue } from "../utils/orderEmailQueue.js";
 
-
 export const getOrdersService = async (query) => {
   const limit = Math.max(parseInt(query.limit) || 10, 1);
   const page = Math.max(parseInt(query.page) || 1, 1);
-  const sortField = query.sortBy || "createdAt";
+  const allowedSortFields = ["createdAt", "totalPrice"];
+  const sortField = allowedSortFields.includes(query.sortBy) ? query.sortBy : "createdAt";
   const sortOrder = query.order === "asc" ? 1 : -1;
   const skip = (page - 1) * limit;
 
@@ -30,7 +30,7 @@ export const getOrdersService = async (query) => {
 
   const totalOrders = await Order.countDocuments(filter);
 
-  const orders = await Order.find(filter, { "__v": 0})
+  const orders = await Order.find(filter, { "__v": 0 })
     .populate("user", "name email -_id")
     .populate("items.bookId", "title author -_id")
     .sort({ [sortField]: sortOrder })
@@ -46,6 +46,7 @@ export const getOrdersService = async (query) => {
     orders,
   };
 };
+
 
 export const updateOrderService = async (orderId, updateData) => {
   if (!mongoose.Types.ObjectId.isValid(orderId)) {
