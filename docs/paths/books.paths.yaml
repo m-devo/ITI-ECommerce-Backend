@@ -56,7 +56,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Book'
+                      $ref: "#/components/schemas/Book"
                   message:
                     type: string
                     example: "Books fetched successfully"
@@ -65,13 +65,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
   /api/admin/book/create:
     post:
       summary: Create a new book
@@ -90,7 +90,7 @@ paths:
                 author:
                   type: string
                   example: "François Chollet"
-                descrption:
+                description:
                   type: string
                   example: "A comprehensive guide to deep learning using Keras and TensorFlow."
                 price:
@@ -116,13 +116,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: "#/components/schemas/Book"
         "400":
           description: Invalid input data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /api/admin/book/oneBook/{ID}:
     get:
@@ -142,78 +142,84 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: "#/components/schemas/Book"
         "404":
           description: Book not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "400":
           description: Invalid Book ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /api/admin/book/update/{ID}:
-    patch:
-      summary: Update a book by ID
-      description: Update book details or replace its files (Admin only).
-      tags: [Books]
-      parameters:
-        - in: path
-          name: ID
-          required: true
-          schema:
-            type: string
-          description: The ID of the book
-      requestBody:
+/api/admin/book/update/{ID}:
+  patch:
+    summary: Update a book by ID
+    description: Update book details or replace its files (Admin only).
+    tags: [Books]
+    parameters:
+      - in: path
+        name: ID
         required: true
+        schema:
+          type: string
+        description: The ID of the book
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+                example: "Book title"
+              author:
+                type: string
+                example: "Author name"
+              price:
+                type: number
+                example: 9.99
+              stock:
+                type: integer
+                example: 5
+              description:
+                type: string
+                example: "Description of the book"
+              category:
+                type: string
+                example: "General"
+              book:
+                type: string
+                format: binary
+                description: New book file to upload
+              image:
+                type: string
+                format: binary
+                description: New image file to upload
+    responses:
+      "200":
+        description: Book updated successfully
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                author:
-                  type: string
-                price:
-                  type: number
-                stock:
-                  type: integer
-                descrption:
-                  type: string
-                category:
-                  type: string
-                book:
-                  type: string
-                  format: binary
-                  description: New book file to upload
-                image:
-                  type: string
-                  format: binary
-                  description: New image file to upload
-      responses:
-        "200":
-          description: Book updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Book'
-        "400":
-          description: Invalid input data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "404":
-          description: Book not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+              $ref: "#/components/schemas/Book"
+      "400":
+        description: Invalid input data
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
+      "404":
+        description: Book not found
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Error"
 
   /api/admin/book/delete/{ID}:
     delete:
@@ -233,16 +239,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Book'
+                $ref: "#/components/schemas/Book"
         "404":
           description: Book not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
         "400":
           description: Invalid Book ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
