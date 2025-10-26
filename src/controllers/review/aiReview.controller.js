@@ -7,13 +7,12 @@ export const createReview = async (req, res) => {
         console.log("🎧 Uploaded file:", req.file);
         console.log("👤 Authenticated user:", req.user);
 
-        const { user, book, rating, comment, language } = req.body;
+        const { book, rating, comment, language } = req.body;
 
         let audioUrl = null;
         let transcription = null;
 
         let newReviewData = {
-            user,
             book,
             rating,
             comment,
@@ -31,7 +30,7 @@ export const createReview = async (req, res) => {
 
         // Save to MongoDB
         const review = await Review.create({
-            user: user,
+            user: req.currentUser.id,
             book,
             rating,
             comment,
@@ -79,8 +78,8 @@ export const getReviewsByBook = async (req, res) => {
 // get all reviews for book
 export const getReviewsByUser = async (req, res) => {
     try {
-        const { currentUser } = req.params;
-        const reviews = await Review.find({ user: currentUser })
+        const { userId } = req.params;
+        const reviews = await Review.find({ user: userId })
             .populate("user", "firstName email")
             .populate("book", "title author")
             .sort({ createdAt: -1 });
