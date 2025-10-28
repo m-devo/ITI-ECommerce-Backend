@@ -4,6 +4,7 @@ import ApiError from "../../../utils/ApiError.js"
 import ApiResponse from "../../../utils/ApiResponse.js"
 import catchAsync from "../../../utils/catchAsync.js"
 import mongoose from "mongoose";
+import SummarizerManager from "node-summarizer";
 export const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -58,8 +59,6 @@ export const getAllBooks = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-
 
 
 export const getBookById = async (req, res) => {
@@ -132,3 +131,32 @@ export const getBookById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+
+
+// export const getBookSummary = async (req, res) => {
+//   try {
+//     const bookId = req.params.id;
+//     const book = await Book.findById(bookId);
+
+//     if (!book) {
+//       return res.status(404).json({ message: "Book not found" });
+//     }
+
+//     const text = book.content || book.description;
+//     if (!text || text.length < 100) {
+//       return res.status(400).json({ message: "Not enough text to summarize" });
+//     }
+
+//     const summarizer = new SummarizerManager(text, 3);
+//     const summaryResult = await summarizer.getSummaryByRank();
+
+//     res.json({
+//       title: book.title,
+//       summary: summaryResult.summary,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error generating summary" });
+//   }
+// };
