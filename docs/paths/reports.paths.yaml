@@ -1,5 +1,5 @@
 paths:
-  /api/report/thirtyDays:
+  /api/reports/thirtyDays:
     get:
       summary: Get the last 30 daily sales reports (Admin)
       tags: [Reports]
@@ -42,7 +42,7 @@ paths:
                 message: "You do not have permission to perform this action"
                 success: false
 
-  /api/report/latest:
+  /api/reports/latest:
     get:
       summary: Get the latest daily sales report (Admin)
       tags: [Reports]
@@ -74,7 +74,7 @@ paths:
                 message: "No report found"
                 success: false
 
-  /api/report/{date}:
+  /api/reports/{date}:
     get:
       summary: Get a report by specific date (Admin)
       tags: [Reports]

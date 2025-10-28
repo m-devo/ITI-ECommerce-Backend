@@ -14,7 +14,7 @@ router.get(
     protect,restrictTo('admin'),
     UserController.getUserById
 );
-router.post(
+router.patch(
     '/update/:id',
     protect,restrictTo('admin'),
     UserController.updateUser

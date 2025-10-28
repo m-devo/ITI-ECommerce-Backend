@@ -1,0 +1,51 @@
+components:
+  securitySchemes:     # 👈 لازم تكون هنا فوق schemas مش جواه
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthorRequest:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "6720dfb1c2a4d83e21d9a111"
+        user:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "6719abc123d4e5678f90a111"
+            name:
+              type: string
+              example: "Aya Hamed"
+            email:
+              type: string
+              example: "aya@example.com"
+        fullName:
+          type: string
+          example: "Aya Hamed Zaki"
+        bio:
+          type: string
+          example: "Author of educational books in AI and programming."
+        idCard:
+          type: string
+          example: "https://s3.amazonaws.com/bucket/idcard.jpg"
+        selfie:
+          type: string
+          example: "https://s3.amazonaws.com/bucket/selfie.jpg"
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          example: "pending"
+        adminNote:
+          type: string
+          example: "All documents verified successfully."
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

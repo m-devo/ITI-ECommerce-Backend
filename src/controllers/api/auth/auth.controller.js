@@ -15,8 +15,7 @@ const getUserProfile = async (req, res) => {
 
 // register a new user
 const registerUser = async (req, res) => {
-  console.log(req);
-  const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password } = req.body;
   // if the user already exists check it
   const existingUser = await User.findOne({ email });
   if (existingUser) {

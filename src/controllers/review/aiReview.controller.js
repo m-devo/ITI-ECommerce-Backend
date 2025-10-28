@@ -26,7 +26,7 @@ export const createReview = async (req, res) => {
 
         // Save to MongoDB
         const review = await Review.create({
-            user: user,
+            user: req.currentUser.id,
             book,
             rating,
             comment,
@@ -73,8 +73,8 @@ export const getReviewsByBook = async (req, res) => {
 // get all reviews for book
 export const getReviewsByUser = async (req, res) => {
     try {
-        const { currentUser } = req.params;
-        const reviews = await Review.find({ user: currentUser })
+        const { userId } = req.params;
+        const reviews = await Review.find({ user: userId })
             .populate("user", "firstName email")
             .populate("book", "title author")
             .sort({ createdAt: -1 });

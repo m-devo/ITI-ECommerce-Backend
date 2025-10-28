@@ -33,100 +33,293 @@ paths:
                 message: "No book of the day found"
                 success: false
 
-/api/features/{id}/manual-book-of-the-day:
-  post:
-    summary: Set a book as "Book of the Day" (Admin)
-    tags: [Book Features]
-    description: >
-      Manually sets a specific book as the featured "Book of the Day".
-      This will clear the previous book of the day and also invalidate the 'homepage' cache.
-      Restricted to 'admin' users.
-    security:
-      - bearerAuth: []
-    parameters:
-      - in: path
-        name: id
-        schema:
-          type: string
-        required: true
-        description: The ID of the book to feature.
-        example: "68e7ed98aa7000812ffe6213"
-    responses:
-      "200":
-        description: Book of the day has been set successfully.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponse"
-            example:
-              statusCode: 200
-              data:
-                book:
-                  _id: "68e7ed98aa7000812ffe6213"
-                  title: "Three Body Problems"
-                  author: "Liu Cixin"
-                  price: 300
-                  featuredAt: "2025-10-23T04:00:00.000Z"
-              message: "Book of the day has been set successfully"
-              success: true
-      "400":
-        description: Bad Request (e.g., Book ID is missing).
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            example:
-              statusCode: 400
-              message: "Book ID is required"
-              success: false
-      "401":
-        description: Unauthorized (Invalid or missing token).
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            example:
-              statusCode: 401
-              message: "invalid token"
-              success: false
-      "403":
-        description: Forbidden (User is not an admin).
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            example:
-              statusCode: 403
-              message: "You do not have permission to perform this action"
-              success: false
-
-/api/features/homepage:
-  get:
-    summary: Get cached data for the homepage
-    tags: [Book Features]
-    description: >
-      Retrieves the main data for the homepage. This endpoint is cached.
-      It returns the latest books and the featured book of the day.
-    responses:
-      "200":
-        description: Homepage data retrieved successfully (from cache or database).
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponse"
-            example:
-              statusCode: 200
-              data:
-                latestBooks:
-                  - _id: "68e817158483527382d205ea"
+  /api/features/{id}/manual-book-of-the-day:
+    post:
+      summary: Set a book as "Book of the Day" (Admin)
+      tags: [Book Features]
+      description: >
+        Manually sets a specific book as the featured "Book of the Day".
+        This will clear the previous book of the day and also invalidate the 'homepage' cache.
+        Restricted to 'admin' users.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the book to feature.
+          example: "68e7ed98aa7000812ffe6213"
+      responses:
+        "200":
+          description: Book of the day has been set successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 200
+                data:
+                  book:
+                    _id: "68e7ed98aa7000812ffe6213"
                     title: "Three Body Problems"
                     author: "Liu Cixin"
-                    price: 40
-                featuredBook:
-                  _id: "68e7ed98aa7000812ffe6213"
-                  title: "Twilight"
-                  author: "Stephenie Meyer"
-                  price: 200
-                  featuredAt: "2025-10-23T03:00:00.000Z"
-              message: "Data retrieved from database"
-              success: true
+                    price: 300
+                    featuredAt: "2025-10-23T04:00:00.000Z"
+                message: "Book of the day has been set successfully"
+                success: true
+        "400":
+          description: Bad Request (e.g., Book ID is missing).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 400
+                message: "Book ID is required"
+                success: false
+        "401":
+          description: Unauthorized (Invalid or missing token).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "403":
+          description: Forbidden (User is not an admin).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 403
+                message: "You do not have permission to perform this action"
+                success: false
+ 
+  /api/features/homepage:
+    get:
+      summary: Get cached data for the homepage
+      tags: [Book Features]
+      description: >
+        Retrieves the main data for the homepage. This endpoint is cached.
+        It returns the latest books and the featured book of the day.
+      responses:
+        "200":
+          description: Homepage data retrieved successfully (from cache or database).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+              example:
+                statusCode: 200
+                data:
+                  latestBooks:
+                    - _id: "68e817158483527382d205ea"
+                      title: "Three Body Problems"
+                      author: "Liu Cixin"
+                      price: 40
+                  featuredBook:
+                    _id: "68e7ed98aa7000812ffe6213"
+                    title: "Twilight"
+                    author: "Stephenie Meyer"
+                    price: 200
+                    featuredAt: "2025-10-23T03:00:00.000Z"
+                message: "Data retrieved from database"
+                success: true
+
+  /api/public/books:
+    get:
+      summary: Get all books with pagination, sorting, and review statistics
+      tags: [Book Features]
+      description: >
+        Retrieve a list of books with their average ratings and review counts.
+        Supports pagination and sorting by upload date.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Number of books per page
+      responses:
+        "200":
+          description: Successfully retrieved the list of books
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  currentPage:
+                    type: integer
+                    example: 1
+                  totalPages:
+                    type: integer
+                    example: 3
+                  totalBooks:
+                    type: integer
+                    example: 25
+                  books:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          example: "68e817158483527382d205ea"
+                        title:
+                          type: string
+                          example: "Three Body Problems"
+                        author:
+                          type: string
+                          example: "Liu Cixin"
+                        price:
+                          type: number
+                          example: 300
+                        averageRating:
+                          type: number
+                          example: 4
+                        reviewCount:
+                          type: integer
+                          example: 12
+          example:
+            success: true
+            currentPage: 1
+            totalPages: 5
+            totalBooks: 50
+            books:
+              - _id: "68e817158483527382d205ea"
+                title: "Three Body Problems"
+                author: "Liu Cixin"
+                price: 300
+                averageRating: 4
+                reviewCount: 12
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Internal server error"
+                    
+  /api/public/books/{id}:
+    get:
+      summary: Get a book by ID with reviews and rating
+      tags: [Book Features]
+      description: >
+        Retrieve detailed information about a single book using its ID.
+        Includes its reviews, review count, and average rating.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            example: "68e7ed98aa7000812ffe6213"
+          required: true
+          description: The ID of the book to retrieve
+      responses:
+        "200":
+          description: Successfully retrieved the book details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  book:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "68e7ed98aa7000812ffe6213"
+                      title:
+                        type: string
+                        example: "Twilight"
+                      author:
+                        type: string
+                        example: "Stephenie Meyer"
+                      price:
+                        type: number
+                        example: 200
+                      averageRating:
+                        type: number
+                        example: 4.5
+                      reviewCount:
+                        type: integer
+                        example: 10
+                      reviews:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            user:
+                              type: string
+                              example: "John Doe"
+                            rating:
+                              type: number
+                              example: 5
+                            comment:
+                              type: string
+                              example: "Excellent book!"
+                            createdAt:
+                              type: string
+                              example: "2025-10-24T10:00:00.000Z"
+        "400":
+          description: Invalid book ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid book ID"
+        "404":
+          description: Book not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Book not found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Internal server error"

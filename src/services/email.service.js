@@ -1,17 +1,6 @@
-import nodemailer from "nodemailer";
+import transporter from '../../config/mailer.js';
 
 const sendEmail = async (options) => {
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST, 
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: process.env.EMAIL_PORT === '465',
-    auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS, 
-    },
-  });
-
   const mailOptions = {
     from: `"E-Book Store" <${process.env.EMAIL_USER}>`,
     to: options.to,
