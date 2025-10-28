@@ -51,10 +51,10 @@ function initializeChat(httpServer) {
 
             if (userRole === "admin" && roleParam === "admin") {
 
-                chatHandlerService.handleAdminConnection(ws, clientId, user) // passing the user object
+                chatHandlerService.adminConnectionHandler(ws, clientId, user) // passing the user object
             } else {
 
-                chatHandlerService.handleCustomerConnection(ws, clientId, userRole, user)
+                chatHandlerService.customersConnectionHandler(ws, clientId, userRole, user)
             }
 
         } catch (error) {
@@ -64,28 +64,17 @@ function initializeChat(httpServer) {
         }
     });
 
-    const interval = setInterval(function () {
-
+ const interval = setInterval(function () {
         wss.clients.forEach(function each(ws) {
-
             if (ws.isAlive === false) {
-                console.log(`Client ${ws.clientId || "Not Known"} is dead (no pong), terminating...`)
-                if (ws.clientId) {
+                console.log(`Client ${ws.clientId || "Not Known"} is dead (no pong), terminating...`);                
 
-                    // Decide cleanup based on role if known
-                    const cleanupRole = ws.userRole === "admin" ? clients.adminClients : clients.customerClients;
-
-                    cleanupRole.delete(ws.clientId)
-
-                    chatStateService.cleanupChatState(ws.clientId).catch(err => console.error("Error cleaning up state on terminate:", err))
-                }
-                return ws.terminate();
+                return ws.terminate(); 
             }
-            ws.isAlive = false
-            ws.ping()
-
+            ws.isAlive = false;
+            ws.ping();
         });
-    }, 30000)
+    }, 30000);
 
     wss.on("close", function () {
         clearInterval(interval)
