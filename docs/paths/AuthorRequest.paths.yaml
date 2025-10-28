@@ -1,0 +1,178 @@
+paths:
+  /api/user/requests:
+    post:
+      summary: Create an author request
+      description: User submits a request to become an author (uploads ID card and selfie).
+      security:
+        - bearerAuth: []  
+      tags:
+        - Author Requests
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                  example: "Aya Hamed Zaki"
+                bio:
+                  type: string
+                  example: "Content writer specialized in AI education."
+                idCard:
+                  type: string
+                  format: binary
+                  description: Image of the ID card
+                selfie:
+                  type: string
+                  format: binary
+                  description: User selfie for verification
+      responses:
+        "201":
+          description: Author request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorRequest"
+        "400":
+          description: Validation error or missing files
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    get:
+      summary: Get my latest author request
+      description: Retrieve the last request created by the logged-in user.
+      security:
+        - bearerAuth: []  
+      tags:
+        - Author Requests
+      responses:
+        "200":
+          description: Author request retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorRequest"
+        "404":
+          description: No author request found
+
+  /api/user/requests/{requestId}:
+    patch:
+      summary: Update pending author request
+      description: User can update ID card or selfie while the request is pending.
+      security:
+        - bearerAuth: []   
+      tags:
+        - Author Requests
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+          description: The ID of the author request
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                bio:
+                  type: string
+                idCard:
+                  type: string
+                  format: binary
+                  description: New ID card file
+                selfie:
+                  type: string
+                  format: binary
+                  description: New selfie file
+      responses:
+        "200":
+          description: Author request updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorRequest"
+
+  /api/admin/requests:
+    get:
+      summary: Get all author requests
+      description: Admin can view all author requests with pagination and status filter.
+      security:
+        - bearerAuth: []  
+      tags:
+        - Author Requests (Admin)
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+          description: Items per page
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+            example: "pending"
+          description: Filter requests by status
+      responses:
+        "200":
+          description: Author requests retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuthorRequest"
+
+  /api/admin/requests/{requestId}/status:
+    patch:
+      summary: Update author request status
+      description: Admin updates the status of an author request (approve/reject).
+      security:
+        - bearerAuth: []
+      tags:
+        - Author Requests (Admin)
+      parameters:
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+          description: The ID of the author request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: "approved"
+                adminNote:
+                  type: string
+                  example: "Verified and approved."
+      responses:
+        "200":
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorRequest"
+
+
