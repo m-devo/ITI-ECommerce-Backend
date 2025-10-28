@@ -34,7 +34,7 @@ git clone https://github.com/m-devo/ITI-Ecommerce-Backend.git
 ```
 2. Navigate to the project directory:
 ```bash
-cd ITI-Books-Ecommerce-Backend
+cd ITI-Ecommerce-Backend
 ```
 3. Install the dependencies:
 ```bash
@@ -76,9 +76,15 @@ AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 AWS_BUCKET_NAME=
+#RabbitMQ
+RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+RABBITMQ_USER=guest
+RABBITMQ_PASS=guest
+# DEPPGRAM KEY
+DEEPGRAM_KEY=
 ```
 
-## Usage
+## Running the Project
 
 You can run the server in development mode or production mode, either with or without Docker.
 
@@ -192,11 +198,12 @@ This project is packed with features designed to provide a complete and modern e
 
 - **Robust Background Processing**:
   - **Scheduled Jobs**: Uses `node-cron` to run scheduled tasks for sending periodic emails (like cart reminders, stock warns) and generating daily/monthly reports.
-  - **Email Notifications**: Asynchronous email delivery with `Nodemailer` for events like user registration and confirmation.
+  - **Email Notifications**: Asynchronous email delivery with `Nodemailer` and `RabbitMQ` for events like user registration and confirmation, cart related emails and weekly news.
 
 - **Performance and Scalability**:
   - **Redis Caching**: Implements a Redis caching layer to reduce database load and speed up data responses.
   - **Optimized Queries**: Mongoose schemas and queries are designed for efficient data retrieval.
+- **Chatbot Feature**: Helps the user in contacting customer service(Admin) directyly, submitting a complaint, following an order, or searching fro a book.
 
 ## Project Structure
 
