@@ -2,10 +2,8 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 
-// استخدم مسار مطلق من جذر المشروع
 const uploadPath = path.join(process.cwd(), "uploads", "audios");
 
-// تأكد إن المجلد موجود أو أنشئه
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });
 }

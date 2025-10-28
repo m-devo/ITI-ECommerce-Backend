@@ -3,7 +3,7 @@ import { Order } from "../models/orders.model.js";
 import ApiError from "../utils/ApiError.js";
 import { CartService } from "./cart.service.js";
 import bookSchema from "../models/bookSchema.js";
-import * as orderEmail from "../utils/orderEmail.js"
+import { sendEmailToQueue } from "../utils/orderEmailQueue.js";
 
 
 export const getOrdersService = async (query) => {
@@ -47,16 +47,29 @@ export const getOrdersService = async (query) => {
   };
 };
 
-
 export const updateOrderService = async (orderId, updateData) => {
-  const order = await Order.findById(orderId);
-
-  if (!order) {
-    return null; 
+  if (!mongoose.Types.ObjectId.isValid(orderId)) {
+    throw new ApiError(400, "Invalid order ID");
   }
 
-  Object.assign(order, updateData);
+  const allowedFields = ["status"]; 
+  const filteredData = {};
 
+  for (const key of allowedFields) {
+    if (updateData[key] !== undefined) {
+      filteredData[key] = updateData[key];
+    }
+  }
+
+  if (Object.keys(filteredData).length === 0) {
+    throw new ApiError(400, "No valid fields to update");
+  }
+  const order = await Order.findById(orderId);
+  if (!order) {
+    return null;
+  }
+
+  Object.assign(order, filteredData);
   const updatedOrder = await order.save();
 
   return updatedOrder;
@@ -109,10 +122,7 @@ export async function createOrderFromCart(userId, billingData, paymentMethod) {
         });
 
 
-        orderEmail.sendPendingOrderEmail(billingData.email, newOrder)
-            .catch(err => {
-                console.error(`[EmailService] Failed to send 'pending' email for order ${newOrder._id}:`, err);
-        });
+        sendEmailToQueue('pending', billingData.email, newOrder);
 
         return newOrder;
 
@@ -144,10 +154,7 @@ export async function fulfillOrder(orderId) {
     order.status = 'paid';
     await order.save();
 
-    orderEmail.sendConfirmedOrderEmail(order.billingData.email, order)
-        .catch(err => {
-            console.error(`[EmailService] Failed to send 'confirmed' email for order ${order._id}:`, err);
-      });
+    sendEmailToQueue('confirmed', order.billingData.email, order);
 
     return order;
 }
@@ -179,10 +186,7 @@ export async function cancelOrderAndRestock(orderId) {
                 });
             }
 
-            orderEmail.sendCancelledOrderEmail(order.billingData.email, order)
-                .catch(err => {
-                    console.error(`[EmailService] Failed to send 'cancelled' email for order ${order._id}:`, err);
-            });
+            sendEmailToQueue('cancelled', order.billingData.email, order);
         
         } catch (error) {
             throw new ApiError("Error processing failed payment: ", error); 

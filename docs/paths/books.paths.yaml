@@ -1,5 +1,5 @@
 paths:
-  /api/books:
+  /api/admin/book/allBooks:
     get:
       summary: Get all books
       description: Retrieve a paginated list of all available books with optional filters.
@@ -72,7 +72,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
+  /api/admin/book/create:
     post:
       summary: Create a new book
       description: Add a new book to the database (Admin only).
@@ -124,7 +124,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /api/books/{ID}:
+  /api/admin/book/oneBook/{ID}:
     get:
       summary: Get book by ID
       description: Retrieve detailed information about a specific book.
@@ -156,6 +156,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/admin/book/update/{ID}:
     patch:
       summary: Update a book by ID
       description: Update book details or replace its files (Admin only).
@@ -214,6 +215,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/admin/book/delete/{ID}:
     delete:
       summary: Delete a book by ID
       description: Mark a book as deleted (soft delete).

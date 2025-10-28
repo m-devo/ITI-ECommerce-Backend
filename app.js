@@ -1,7 +1,9 @@
 import "dotenv/config";
 import express from "express";
 import connectDB from "./config/db.js";
-import { redisConnection } from "./config/redis.js";
+import { connectRabbitMQ } from "./config/rabbitmq.js";
+import redisClient, { redisConnection } from "./config/redis.js";
+import mongoose from 'mongoose';
 import passport from "./config/passport.js";
 import { isAuth } from "./src/middlewares/isAuth.middleware.js"
 import errorHandler from './src/middlewares/error.middleware.js';
@@ -14,10 +16,14 @@ import newsRouter from './src/routes/news.route.js';
 import cartRouter from './src/routes/cart.routes.js';
 import checkoutRouter from './src/routes/checkout.routes.js';
 import { createRateLimiter } from './src/middlewares/rateLimit.middleware.js'
+import complaintsRouter from "./src/routes/complaints.routes.js"
+import publicRouter from "./src/routes/booksUser.route.js"
+
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
 import bookRouter from "./src/routes/book.route.js";
+import userProfileRouter from "./src/routes/userProfile.route.js"
 import path from "path";
 import "./src/services/stock.service.js";
 
@@ -27,11 +33,21 @@ import "./src/jobs/weeklyNews.job.js";
 import "./src/jobs/abandonedCart.job.js";
 import reviewRoutes from "./src/routes/review.routes.js";
 import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js"
+import { consumeEmailQueue } from "./src/utils/orderEmailQueue.js";
 import { fileURLToPath } from "url";
+
+/***************Web Socket*************/
+import http from "http"
+import chatService from "./src/chatbot/chat.service.js"
+/***************Web Socket*************/
+
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 connectDB();
 redisConnection(); // opening redis connection
+await connectRabbitMQ(); // connecting to RabbitMQ
+await consumeEmailQueue(); // start email consumer
 startOrdersReconciliationCron();
 
 app.set('trust proxy', 1);
@@ -63,6 +79,8 @@ app.use("/api/admin/users", userRoutes);
 app.use("/api/admin/book", bookRouter);
 app.use("/api/admin/order", orderRouter);
 
+app.use("/api/public", publicRouter)
+
 //daily report***
 app.use("/api/reports", reportRouter);
 
@@ -72,20 +90,17 @@ app.use("/api/features", featuresRouter);
 
 app.use("/api/news", newsRouter);
 
+app.use("/api/user", isAuth, userProfileRouter);
 app.use("/api/cart", isAuth, cartRouter);
 
 app.use("/api/checkout", checkoutRouter);
 
-app.use("/api", searchRoutes)
+app.use("/api/complaints/", complaintsRouter)
+
+app.use("/api/search", searchRoutes)
+
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.use((req, res, next) => {
-  return res.status(404).json({
-    status: "fail",
-    message: "Route is not found",
-  });
-});
-
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,12 +109,56 @@ app.get("/", (req, res) => res.send("Bookstore Search API Running..."));
 
 // app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`))
 
-
-
+app.use((req, res, next) => {
+  return res.status(404).json({
+    status: "fail",
+    message: "Route is not found",
+  });
+});
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+/***************Web Socket*************/
+const server = http.createServer(app)
+chatService.initializeChat(server) 
+/***************Web Socket*************/
+
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
-;
+
+async function softShutdown() {
+  console.log("Received kill signal");
+  
+  server.close(async () => {
+    console.log("HTTP server closed.");
+
+    try {
+      //close mongo connection
+      await mongoose.connection.close();
+      console.log("MongoDB connection closed.");
+
+      //check then clse regis conetion
+      if (redisClient && redisClient.isOpen) {
+        await redisClient.quit();
+        console.log("Redis connection closed.");
+      }
+      
+      console.log("All connections closed. Exiting process.");
+      process.exit(0);
+
+    } catch (error) {
+      console.error("Error during so shutdown:", error);
+      process.exit(1); 
+    }
+  });
+
+  setTimeout(() => {
+    console.error("Closing connection after 10s if couldn't");
+    process.exit(1);
+  }, 10000);
+}
+
+process.once("SIGUSR2", softShutdown);
+process.on("SIGINT", softShutdown);
+process.on("SIGTERM", softShutdown);

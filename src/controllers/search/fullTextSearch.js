@@ -1,4 +1,6 @@
 import  Book  from "../../models/bookSchema.js";
+import ApiError from "../../utils/ApiError.js";
+import ApiResponse from "../../utils/ApiResponse.js";
 
 //  Basic Text Search
 export const searchBooks = async (req, res) => {
@@ -12,9 +14,9 @@ export const searchBooks = async (req, res) => {
             { score: { $meta: "textScore" } }
         ).sort({ score: { $meta: "textScore" } });
 
-        res.json(results);
+        res.status(200).json(new ApiResponse(200, results, "Searched Books"))
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        throw new ApiError(500, 'Server Error')
     }
 };
 
@@ -31,9 +33,10 @@ export const suggestBooks = async (req, res) => {
             .limit(5)
             .select("title author");
 
-        res.json(suggestions);
+        return res.status(200).json(new ApiResponse(200, suggestions, "Searched Books"))
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        throw new ApiError(500, 'Server Error')
     }
 };
 
@@ -53,8 +56,8 @@ export const facetSearch = async (req, res) => {
         }
 
         const results = await Book.find(filter);
-        res.json(results);
+        return res.status(200).json(new ApiResponse(200, results, "Searched Books"))
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        throw new ApiError(500, 'Server Error')
     }
 };

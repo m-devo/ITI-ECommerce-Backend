@@ -12,7 +12,7 @@ export const checkoutSchema = Joi.object({
             city: Joi.string().required()
         }).required(),
 
-        paymentMethod: Joi.string().valid('paymob').required()
+        paymentMethod: Joi.string().valid('paymob', 'cod').required()
     }
 });
 

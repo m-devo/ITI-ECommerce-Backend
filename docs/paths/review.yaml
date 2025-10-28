@@ -35,7 +35,7 @@
             schema:
               $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/book/{bookId}:
+/api/reviews/book/{bookId}:
   get:
     summary: Get all reviews for a specific book
     tags:
