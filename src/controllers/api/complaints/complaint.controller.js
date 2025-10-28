@@ -67,7 +67,7 @@ const getComplaintById = async (req, res, next) => {
 
 const replyToComplaint = async (req, res, next) => {
     try {
-        const { replyMessage } = req.body;
+        const { replyMessage, newStatus } = req.body;
         const adminUserId = req.user._id; 
 
         if (!replyMessage) {
@@ -85,7 +85,12 @@ const replyToComplaint = async (req, res, next) => {
             message: replyMessage
         });
 
-        complaint.status = "resolved"; 
+        if(newStatus && ["inProgress", "resolved", "closed"].includes(newStatus)) {
+            complaint.status = newStatus
+        } else {
+        complaint.status = "inProgress"; 
+        }
+
 
         await complaint.save();
 
@@ -95,15 +100,15 @@ const replyToComplaint = async (req, res, next) => {
             console.error("Error sending live reply notification:", notifyError);
         }
 
-        const updatedComplaint = await Complaint.findById(req.params.id)
-            .populate("user", "firstName lastName email")
-            .populate("replies.sender", "firstName lastName email role");
-
+        await complaint.populate([
+            {path: "user", select: "firstName lastName email"},
+            {path: "replies.sender", select: "firstName lastName email role"}
+        ])
         res.status(200).json({
             status: "success",
             message: "Reply added successfully",
             data: {
-                complaint: updatedComplaint 
+                complaint: complaint 
             }
         });
     } catch (error) {
@@ -115,4 +120,85 @@ const replyToComplaint = async (req, res, next) => {
     }
 };
 
-export default { getAllComplaints, getComplaintById, replyToComplaint };
+const getUserComplaints = async (req, res, next) => {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (page - 1) * limit;
+    try {
+       
+        const complaints = await Complaint.find({ user: req.user._id })
+            .sort({ createdAt: -1 })
+            .select("-replies")
+            .skip(skip)
+            .limit(limit)
+
+        const totalComplaints = await Complaint.countDocuments({ user: req.user._id });            res.status(200).json({
+            status: "success",
+            data: {
+                complaints,
+                currentPage: page,
+                totalPages: Math.ceil(totalComplaints / limit),
+                totalComplaints
+            }
+        });
+
+    } catch (error) { next(error); }
+};
+
+const getUserComplaintById = async (req, res, next) => {
+    try {
+        const complaint = await Complaint.findOne({ _id: req.params.id, user: req.user._id })
+            .populate("user", "firstName lastName email")
+            .populate("replies.sender", "firstName lastName email role");
+
+        if (!complaint) {
+            return res.status(404).json({ status: "fail", message: "Complaint not found or you don't have permission." });
+        }
+        res.status(200).json({ status: "success", data: { complaint } });
+    } catch (error) { next(error); }
+};
+
+const userReplyToComplaint = async (req, res, next) => {
+    try {
+        const { replyMessage } = req.body;
+        const userId = req.user._id;
+
+        if (!replyMessage) {
+             return res.status(400).json({ status: "fail", message: "Reply message is required" });
+        }
+
+        const complaint = await Complaint.findOne({ _id: req.params.id, user: userId });
+
+        if (!complaint) {
+            return res.status(404).json({ status: "fail", message: "Complaint not found or you don't have permission." });
+        }
+
+        if (complaint.status === 'closed') {
+             return res.status(400).json({ status: "fail", message: "This complaint is closed and cannot be replied to." });
+        }
+
+        complaint.replies.push({
+            sender: userId, 
+            message: replyMessage
+        });
+
+        if (complaint.status === 'resolved') {
+            complaint.status = "inProgress"; 
+        }
+        await complaint.save();
+
+        await complaint.populate("replies.sender", "firstName lastName email role");
+
+        res.status(200).json({
+            status: "success",
+            message: "Your reply has been added.",
+            data: { complaint }
+        });
+
+    } catch (error) { next(error); }
+};
+
+export default { 
+    getAllComplaints, getComplaintById, replyToComplaint, 
+    getUserComplaints, getUserComplaintById, userReplyToComplaint};

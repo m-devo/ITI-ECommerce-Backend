@@ -2,22 +2,29 @@ import clients from "./chat.clients.js";
 import chatStateService from "./chat.state.js";
 import liveChatService from "./chat.livechat.js";
 import chatRoutingService from "./chat.routing.js";
+import redisClient from "../../config/redis.js";
 
-function handleAdminConnection(ws, adminId, user) {
+function adminConnectionHandler(ws, adminId, user) {
 
     ws.user = user; 
-    clients.adminClients.set(adminId, ws);
+    clients.adminClients.set(adminId, ws)
     
     chatStateService.updateChatState(adminId, "admin_available")
+    .then(()=>{
+        return redisClient.sAdd("available_admins", adminId)
+    })
+    .then(()=>{
+        console.log(`Admin ${adminId} set to available and added to Set`)
+    })
     .catch(error => 
 
         console.error("Failed to set initial admin state:", error
-        ));
+        ))
     console.log(`Admin connected: ${adminId} (${user?.email}). Total admins: ${clients.adminClients.size}`)
 
     ws.send(JSON.stringify(
-        { type: "welcome_admin", message: "Connected to Admin Live Channel. Status: Available" }
-    ));
+        { type: "welcome_admin", message: "Connected to Admin Channel. Available" }
+    ))
 
     ws.on("message", async (message) => {
         try {
@@ -71,7 +78,10 @@ function handleAdminConnection(ws, adminId, user) {
                         await liveChatService.pairAdminAndCustomer(adminId, customerIdToConnect);
                     } else {
                         console.log(`Admin ${adminId} tried to accept chat but is not available (state: ${currentState})`);
-                        ws.send(JSON.stringify({ type: "error", message: "Cannot accept chat, you are currently busy or unavailable." }));
+                        ws.send(JSON.stringify({ 
+                            type: "error", 
+                            message: "Cannot accept chat, you are busy or unavailable." 
+                        }));
                     }
                 }
                  else if (parsedMsg.type === "admin_end_chat" 
@@ -85,7 +95,7 @@ function handleAdminConnection(ws, adminId, user) {
                 }
                  else {
                     console.log(
-                        `Received unhandled JSON command from admin ${adminId} in state ${currentState}:`, parsedMsg);
+                        `Received bad JSON command from admin ${adminId} in state ${currentState}:`, parsedMsg);
                      ws.send(JSON.stringify(
                         { type: "info", 
                         message: "Message type not recognized or invalid state." 
@@ -109,6 +119,11 @@ function handleAdminConnection(ws, adminId, user) {
 
         clients.adminClients.delete(adminId);
 
+        try {
+            await redisClient.sRem("available_admins", adminId)
+        } catch (error) {
+            console.log(`Admin disconnected: ${adminId}.Total Admins ${clients.adminClients.size}`)
+        }
         console.log(`Admin disconnected: ${adminId}. Total admins: ${clients.adminClients.size}`);
 
         if (adminState && adminState.startsWith("in_live_chat_with:")) {
@@ -128,6 +143,11 @@ function handleAdminConnection(ws, adminId, user) {
 
         clients.adminClients.delete(adminId);
 
+        try {
+            await redisClient.sRem("available_admins", adminId)
+        } catch (error) {
+            console.log(`Failed to remove admin ${adminId} from Set on error`, error)
+        }
         if (adminState && adminState.startsWith("in_live_chat_with:")) {
 
             const customerId = adminState.split(":")[1];
@@ -138,7 +158,7 @@ function handleAdminConnection(ws, adminId, user) {
     });
 }
 
-async function handleCustomerConnection(ws, customerId, userRole, user) {
+async function customersConnectionHandler(ws, customerId, userRole, user) {
 
     clients.customerClients.set(customerId, ws);
     console.log(`Customer connected: ${customerId}. Role: ${userRole}.`);
@@ -171,7 +191,7 @@ async function handleCustomerConnection(ws, customerId, userRole, user) {
             }
             clients.customerClients.delete(customerId);
             ws.terminate();
-        }, 600000);
+        }, 900000);
     }
     resetinActivityTime();
 
@@ -291,4 +311,4 @@ async function handleCustomerConnection(ws, customerId, userRole, user) {
     });
 }
 
-export default { handleAdminConnection, handleCustomerConnection };
+export default { adminConnectionHandler, customersConnectionHandler };
