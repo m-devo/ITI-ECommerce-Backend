@@ -1,4 +1,4 @@
-/reviews/add:
+/api/reviews/add:
   post:
     summary: Create a new review (text or audio)
     tags:
@@ -57,7 +57,7 @@
               items:
                 $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/user/{userId}:
+/api/reviews/user/{userId}:
   get:
     summary: Get all reviews by a specific user
     tags:
@@ -79,7 +79,7 @@
               items:
                 $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/edit/{id}:
+/api/reviews/edit/{id}:
   put:
     summary: Update a review
     tags:
@@ -96,7 +96,7 @@
     requestBody:
       required: true
       content:
-        application/json:
+        multipart/form-data:
           schema:
             type: object
             properties:
@@ -106,6 +106,11 @@
               comment:
                 type: string
                 example: "Updated review text"
+              audio:
+                type: string
+                format: binary
+                description: "Optional audio file for transcription"
+
     responses:
       "200":
         description: Review updated successfully
@@ -114,7 +119,7 @@
             schema:
               $ref: "../schemas/review.yaml#/components/schemas/Review"
 
-/reviews/delete/{id}:
+/api/reviews/delete/{id}:
   delete:
     summary: Delete a review (by owner or admin)
     tags:

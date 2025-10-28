@@ -5,19 +5,14 @@ export const createReview = async (req, res) => {
     try {
         console.log("📩 Incoming review data:", req.body);
         console.log("🎧 Uploaded file:", req.file);
-        console.log("👤 Authenticated user:", req.user);
+        console.log("👤 Authenticated user:", req.currentUser);
 
-        const { user, book, rating, comment, language } = req.body;
+        const { book, rating, comment } = req.body;
 
+        const user = req.currentUser.id; // من verifyToken middleware
         let audioUrl = null;
         let transcription = null;
 
-        let newReviewData = {
-            user,
-            book,
-            rating,
-            comment,
-        };
 
         // If the user uploaded an audio file
         if (req.file) {
@@ -37,7 +32,6 @@ export const createReview = async (req, res) => {
             comment,
             audioUrl,
             transcription,
-            language
         });
 
         res.status(201).json({
@@ -101,9 +95,11 @@ export const getReviewsByUser = async (req, res) => {
 // update review 
 export const updateReview = async (req, res) => {
     try {
+        console.log(req.body);
+
         const reviewId = req.params.id; // review ID from URL
         const currentUser = req.currentUser; // from verifyToken middleware
-        const { rating, comment } = req.body; // new data
+        const { rating, comment } = req.body || {}; // new data
 
         const review = await Review.findById(reviewId);
 
@@ -115,8 +111,22 @@ export const updateReview = async (req, res) => {
             return res.status(403).json({ status: "fail", message: "You can only edit your own reviews" });
         }
 
-        if (rating) review.rating = rating;
-        if (comment) review.comment = comment;
+        if (rating !== undefined && rating !== null) {
+            review.rating = rating;
+        }
+
+        // 4. Handle text or audio comment
+        if (comment) {
+            review.comment = comment;
+        }
+        if (req.file) {
+            // Transcribe the audio
+            const transcript = await transcribeAudio(req.file.path);
+            if (!transcript)
+                return res.status(500).json({ message: "Audio transcription failed" });
+            review.transcription = transcript;
+            review.audioUrl = req.file.path; // optional: save file path
+        };
 
         await review.save();
 
