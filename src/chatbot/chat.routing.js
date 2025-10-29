@@ -48,6 +48,12 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
         const criteria = cleanMessage;
         console.log(`Searching books for criteria: "${criteria}" for user ${customerId}`);
 
+        if(ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({
+                message: `Please wait, we're searching for book matching ${criteria}`
+            }))
+        }
+
         try {
             const books = await Book.find({
                 $or: [
@@ -150,14 +156,15 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                                 ));
                                 await new Promise(resolve => setTimeout(resolve, 300)); 
                                 ws.send(JSON.stringify({ 
-                                    message: "Please write your compliant and we will contact you later." }
+                                    message: "Please choose: ",
+                                    options: ["1. Keep waiting for customer service", "2. Register a complaint"]}
                                 ));
                             }
                         }
                     } catch (err) {
                         console.error("Error during live chat timeout check:", err);
                     }
-                }, 60000);
+                }, 240000); // 4 minutes
             }
         } else if (selection === "2") { // Register Complaint
             await chatStateService.updateChatState(customerId, "awaiting_compliant_details");
@@ -178,10 +185,16 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
     else if (currentState === "awaiting_order_id") {
         const orderId = cleanMessage;
         let orderResultResponse = null;
+
+        if(ws.readyState === ws.OPEN) {
+            ws.send(JSON.stringify({
+                message: `Please wait, we're checking for order: ${orderId}`
+            }))
+        }
         try {
             if (userRole === "guest") {
                 orderResultResponse = { 
-                    message: "This service is for only registered customers please login or register first" 
+                    message: "This service is for only registered customers please login!" 
                 };
             } else if (!mongoose.Types.ObjectId.isValid(orderId)) {
 

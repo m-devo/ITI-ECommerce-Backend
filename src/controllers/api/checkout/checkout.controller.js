@@ -18,8 +18,27 @@ export const CheckoutController = {
     createCheckoutSession: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
         const { billingData, paymentMethod } = req.body;
-        
-        const order = await orderService.createOrderFromCart(userId, billingData, paymentMethod);
+
+        // Get user details to populate billingData
+        const { User } = await import("../../../models/users.model.js");
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        // Populate billingData from user profile
+        const completeBillingData = {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: billingData.phone,
+            country: billingData.country,
+            state: billingData.state,
+            city: billingData.city
+        };
+
+        const order = await orderService.createOrderFromCart(userId, completeBillingData, paymentMethod);
 
         if (paymentMethod == "cod") {
             return  res.status(201).json(new ApiResponse(201, null, "Order Created"));

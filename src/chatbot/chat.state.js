@@ -35,7 +35,7 @@ async function cleanupChatState(id) {
     }
 }
 
- async function getChatState(id) {
+async function getChatState(id) {
     const key = `chat:state:${id}`;
     try {
         return await redisClient.get(key);
@@ -45,4 +45,48 @@ async function cleanupChatState(id) {
     }
 }
 
-export default {updateChatState, cleanupChatState, getChatState}
+async function setPairState(adminId, customerId) {
+    const adminKey = `chat:state:${adminId}`;
+    const customerKey = `chat:state:${customerId}`;
+    const adminState = `in_live_chat_with:${customerId}`;
+    const customerState = `in_live_chat_with:${adminId}`;
+
+    try {
+
+        await redisClient.multi()
+            .setEx(adminKey, stateExpire, adminState)   
+            .setEx(customerKey, stateExpire, customerState) 
+            .exec(); 
+        console.log(`Atomic state updated (PAIR): Admin ${adminId} & Customer ${customerId}`);
+    
+    } catch (error) {
+        console.error(`Redis transaction error setting pair state:`, error);
+        throw error;
+    }
+}
+async function setEndChatState(adminId, customerId) {
+    const adminKey = `chat:state:${adminId}`;
+    const customerKey = `chat:state:${customerId}`;
+    const adminState = "admin_available";
+    const customerState = "main_menu";
+
+    try {
+        const multi = redisClient.multi();
+        if (adminId) {
+            multi.setEx(adminKey, stateExpire, adminState);
+        }
+        if (customerId) {
+            multi.setEx(customerKey, stateExpire, customerState);
+        }
+        
+        await multi.exec(); 
+
+        console.log(`Atomic state updated (END): Admin ${adminId}, Customer ${customerId}`);
+    
+    } catch (error) {
+        console.error(`Redis transaction error setting end state:`, error);
+        throw error; 
+    }
+}
+
+export default {updateChatState, cleanupChatState, getChatState, setPairState, setEndChatState}
