@@ -26,6 +26,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
     depends_on:
       rabbitmq:
         condition: service_healthy
