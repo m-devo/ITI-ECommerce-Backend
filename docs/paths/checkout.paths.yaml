@@ -73,25 +73,19 @@ paths:
                 billingData:
                   type: object
                   properties:
-                    firstName:
-                      type: string
-                    lastName:
-                      type: string
-                    email:
-                      type: string
-                      format: email
                     phone:
                       type: string
+                      description: "Phone number for delivery"
                     country:
                       type: string
+                      description: "Country for delivery address"
                     state:
                       type: string
+                      description: "State/province for delivery address"
                     city:
                       type: string
+                      description: "City for delivery address"
                   required:
-                    - firstName
-                    - lastName
-                    - email
                     - phone
                     - country
                     - state
@@ -105,9 +99,6 @@ paths:
                 - paymentMethod
             example:
               billingData:
-                firstName: "John"
-                lastName: "Doe"
-                email: "john.doe@example.com"
                 phone: "+1234567890"
                 country: "Egypt"
                 state: "Cairo"
