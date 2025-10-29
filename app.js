@@ -18,6 +18,7 @@ import checkoutRouter from './src/routes/checkout.routes.js';
 import { createRateLimiter } from './src/middlewares/rateLimit.middleware.js'
 import complaintsRouter from "./src/routes/complaints.routes.js"
 import publicRouter from "./src/routes/booksUser.route.js"
+import authorRouter from "./src/routes/authorrequest.route.js"
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
@@ -80,7 +81,7 @@ app.use("/api/admin/book", bookRouter);
 app.use("/api/admin/order", orderRouter);
 
 app.use("/api/public", publicRouter)
-
+app.use("/api",authorRouter)
 //daily report***
 app.use("/api/reports", reportRouter);
 

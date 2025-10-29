@@ -41,8 +41,8 @@ const checkLowStock = async () => {
 
 // checkLowStock();
 
-cron.schedule("0 * * * *", async () => {
-    console.log("Running hourly stock check...");
-    await checkLowStock();
-});
+// cron.schedule("0 * * * *", async () => {
+//     console.log("Running hourly stock check...");
+//     await checkLowStock();
+// });
 
