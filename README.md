@@ -21,7 +21,10 @@ Follow these steps to get the project up and running on your local machine.
 
 - [Node.js](https://nodejs.org/en/) (v18.x or later recommended)
 - [MongoDB](https://www.mongodb.com/try/download/community) (local instance or a cloud-hosted solution like MongoDB Atlas)
-- [npm](https://www.npmjs.com/) 
+- [npm](https://www.npmjs.com/)
+- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) (for Docker deployment)
+- [Redis](https://redis.io/) (for caching, if not using Docker)
+- [RabbitMQ](https://www.rabbitmq.com/) (for message queuing, if not using Docker)
 
 ### Steps
 
@@ -31,13 +34,14 @@ git clone https://github.com/m-devo/ITI-Ecommerce-Backend.git
 ```
 2. Navigate to the project directory:
 ```bash
-cd ITI-Books-Ecommerce-Backend
+cd ITI-Ecommerce-Backend
 ```
 3. Install the dependencies:
 ```bash
 npm install
 ```
 4. Create a `.env` file in the root of the project and add the necessary environment variables. You can use the `.env.example` as a template.
+5. Set up external services: MongoDB, Redis, RabbitMQ (local or cloud-hosted).
 
 ## Environment Variables
 
@@ -63,16 +67,33 @@ PAYMOB_IFRAME_ID=
 PAYMOB_HMAC_SECRET=
 #REDIS
 REDIS_URL="redis://localhost:6379/"
+#RABBITMQ (for Docker deployment)
+RABBITMQ_URL=
+RABBITMQ_USER=
+RABBITMQ_PASS=
 #AWS
 AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY= 
+AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 AWS_BUCKET_NAME=
+#RabbitMQ
+RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+RABBITMQ_USER=guest
+RABBITMQ_PASS=guest
+# DEPPGRAM KEY
+DEEPGRAM_KEY=
 ```
 
-## Usage
+## Running the Project
 
-You can run the server in development mode or production mode.
+You can run the server in development mode or production mode, either with or without Docker.
+
+### Running Without Docker
+
+**Prerequisites Setup:**
+- Ensure MongoDB is running locally or provide a cloud MongoDB URL
+- Ensure Redis is running locally on port 6379
+- Ensure RabbitMQ is running locally (default ports 5672, 15672)
 
 **Development Mode**
 
@@ -81,6 +102,7 @@ This command starts the server with `nodemon`, which will automatically restart 
 ```bash
 npm run dev
 ```
+
 **Production Mode**
 
 This command starts the server in production mode.
@@ -88,6 +110,50 @@ This command starts the server in production mode.
 ```bash
 npm start
 ```
+
+### Running With Docker
+
+**Prerequisites Setup:**
+- Install Docker and Docker Compose
+- Create a `.env` file with all required environment variables
+
+**Using Docker Compose:**
+
+1. **Build and start all services:**
+
+```bash
+docker-compose up --build
+```
+
+2. **Run in detached mode (background):**
+
+```bash
+docker-compose up --build -d
+```
+
+3. **Stop all services:**
+
+```bash
+docker-compose down
+```
+
+4. **View logs:**
+
+```bash
+docker-compose logs -f app
+```
+
+**Docker Services:**
+- **app**: Main Node.js application (port 4000)
+- **whisper**: Audio transcription service (port 8000)
+- **redis**: Redis caching service
+- **rabbitmq**: Message queuing service
+
+**Environment Variables for Docker:**
+When using Docker Compose, ensure your `.env` file includes:
+- `MONGO_URL`: MongoDB connection string
+- `RABBITMQ_USER` and `RABBITMQ_PASS`: RabbitMQ credentials
+- All other required variables as listed in the Environment Variables section
 
 The server will be running on `http://localhost:4000` or the port you specified in your `.env` file.
 
@@ -132,11 +198,12 @@ This project is packed with features designed to provide a complete and modern e
 
 - **Robust Background Processing**:
   - **Scheduled Jobs**: Uses `node-cron` to run scheduled tasks for sending periodic emails (like cart reminders, stock warns) and generating daily/monthly reports.
-  - **Email Notifications**: Asynchronous email delivery with `Nodemailer` for events like user registration and confirmation.
+  - **Email Notifications**: Asynchronous email delivery with `Nodemailer` and `RabbitMQ` for events like user registration and confirmation, cart related emails and weekly news.
 
 - **Performance and Scalability**:
   - **Redis Caching**: Implements a Redis caching layer to reduce database load and speed up data responses.
   - **Optimized Queries**: Mongoose schemas and queries are designed for efficient data retrieval.
+- **Chatbot Feature**: Helps the user in contacting customer service(Admin) directyly, submitting a complaint, following an order, or searching fro a book.
 
 ## Project Structure
 

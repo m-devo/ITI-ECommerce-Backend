@@ -61,8 +61,6 @@ paths:
             example:
               - bookId: "68e7ed98aa7000812ffe6213"
                 quantity: 3
-              - bookId: "68e817158483527382d205ea"
-                quantity: 0 # This will remove the book
       responses:
         "200":
           description: Cart updated successfully.

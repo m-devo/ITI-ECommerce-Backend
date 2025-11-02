@@ -5,7 +5,7 @@ paths:
       tags: [Complaints]
       description: Retrieves a paginated list of complaints. Requires admin privileges. Supports filtering by status.
       security:
-        - bearerAuth: [] # Indicates JWT token is required
+        - bearerAuth: []
       parameters:
         - in: query
           name: page
@@ -31,12 +31,12 @@ paths:
           content:
             application/json:
               schema:
-                allOf: # Combine standard response with specific data
+                allOf:
                   - $ref: '#/components/schemas/ApiResponse'
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/ComplaintsResponseData' # Use the pagination data schema
+                        $ref: '#/components/schemas/ComplaintsResponseData'
                       message:
                         example: "Complaints retrieved successfully"
         "401":
@@ -81,7 +81,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf: # Combine standard response with specific data
+                allOf:
                   - $ref: '#/components/schemas/ApiResponse'
                   - type: object
                     properties:
@@ -89,7 +89,7 @@ paths:
                         type: object
                         properties:
                           complaint:
-                            $ref: '#/components/schemas/Complaint' # Reference the main Complaint schema
+                            $ref: '#/components/schemas/Complaint'
                       message:
                         example: "Complaint retrieved successfully"
         "400":
@@ -176,24 +176,22 @@ paths:
                         type: object
                         properties:
                           complaint:
-                            $ref: '#/components/schemas/Complaint' # Returns the updated complaint object
+                            $ref: '#/components/schemas/Complaint'
                       message:
                         example: "Reply added successfully"
         "400":
-          description: Bad Request (e.g., missing replyMessage or invalid ID format)
+          description: Bad Request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
                 missingMessage:
-                  summary: Missing reply message
                   value:
                     statusCode: 400
                     message: "Reply message is required"
                     success: false
                 invalidId:
-                  summary: Invalid ID format
                   value:
                     statusCode: 400
                     message: "Invalid complaint ID format"
@@ -219,7 +217,167 @@ paths:
                 message: "You do not have permission to perform this action"
                 success: false
         "404":
-          description: Not Found (Complaint with the specified ID does not exist)
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: "Complaint not found"
+                success: false
+
+  /api/complaints/user:
+    get:
+      summary: Get all complaints for a user
+      tags: [Complaints]
+      description: Retrieves all complaints submitted by the authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User complaints retrieved successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ComplaintsResponseData'
+                      message:
+                        example: "User complaints retrieved successfully"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+
+  /api/complaints/user/{id}:
+    get:
+      summary: Get a specific complaint for a user
+      tags: [Complaints]
+      description: Retrieves a specific complaint created by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Complaint ID
+      responses:
+        "200":
+          description: Complaint retrieved successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          complaint:
+                            $ref: '#/components/schemas/Complaint'
+                      message:
+                        example: "Complaint retrieved successfully"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: "Complaint not found"
+                success: false
+
+  /api/complaints/user/{id}/reply:
+    post:
+      summary: Reply to a complaint (User)
+      tags: [Complaints]
+      description: Allows a user to reply to their own complaint.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Complaint ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                replyMessage:
+                  type: string
+                  description: Reply content from the user.
+              required:
+                - replyMessage
+            example:
+              replyMessage: "Thanks for the quick response."
+      responses:
+        "200":
+          description: Reply added successfully.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          complaint:
+                            $ref: '#/components/schemas/Complaint'
+                      message:
+                        example: "Reply added successfully"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 400
+                message: "Reply message is required"
+                success: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "404":
+          description: Complaint not found
           content:
             application/json:
               schema:

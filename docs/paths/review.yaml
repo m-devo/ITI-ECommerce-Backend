@@ -106,17 +106,21 @@ paths:
           description: Review ID
       requestBody:
         required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                rating:
-                  type: integer
-                  example: 4
-                comment:
-                  type: string
-                  example: "Updated review text"
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            properties:
+              rating:
+                type: integer
+                example: 4
+              comment:
+                type: string
+                example: "Updated review text"
+              audio:
+                type: string
+                format: binary
+                description: "Optional audio file for transcription"
       responses:
         "200":
           description: Review updated successfully

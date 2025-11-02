@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme",
   "dependencies": {
+    "assemblyai": "^4.18.5",
     "amqplib": "^0.10.9",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",

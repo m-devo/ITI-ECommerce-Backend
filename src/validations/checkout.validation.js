@@ -3,9 +3,9 @@ import Joi from 'joi';
 export const checkoutSchema = Joi.object({
     body: {
         billingData: Joi.object({
-            firstName: Joi.string().required(),
-            lastName: Joi.string().required(),
-            email: Joi.string().email({ tlds: { allow: false } }).required(),
+            firstName: Joi.string().optional(),
+            lastName: Joi.string().optional(),
+            email: Joi.string().email({ tlds: { allow: false } }).optional(),
             phone: Joi.string().required(),
             country: Joi.string().required(),
             state: Joi.string().required(),

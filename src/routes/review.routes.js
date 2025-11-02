@@ -18,7 +18,7 @@ router.get("/book/:bookId", getReviewsByBook);
 router.get("/user/:userId", getReviewsByUser);
 
 // edit review
-router.put("/edit/:id", verifyToken, updateReview);
+router.put("/edit/:id", verifyToken, uploadAudio.single("audio"), updateReview);
 
 // Delete review (only owner or admin)
 router.delete("/delete/:id", verifyToken, protect, restrictTo('admin', 'user', 'author'), deleteReview);
