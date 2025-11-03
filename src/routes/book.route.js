@@ -4,7 +4,8 @@ import {
   getBooks,
   getOneBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  updateBookAuthor
 } from "../controllers/api/admin/book.controller.js";
 import { validateBookUpload } from "../middlewares/validateBookFields.js";
 import { upload_field, validateAndSaveFiles } from "../middlewares/storage.middleware.js";
@@ -22,6 +23,13 @@ bookRouter.patch('/update/:ID', verifyToken, protect,
   upload_field,
   validateBookUpdate,
   updateBook
+)
+
+bookRouter.patch('/update/:ID', verifyToken, protect,
+  restrictTo('author'),
+  upload_field,
+  validateBookUpdate,
+  updateBookAuthor
 )
 bookRouter.delete('/delete/:ID', protect, restrictTo('admin'), deleteBook)
 

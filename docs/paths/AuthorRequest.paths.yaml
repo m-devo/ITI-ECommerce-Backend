@@ -138,7 +138,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/AuthorRequest"
 
-  /api/admin/requests/{requestId}/status:
+  /api/admin/requests/{requestId}:
     patch:
       summary: Update author request status
       description: Admin updates the status of an author request (approve/reject).
