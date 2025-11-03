@@ -30,7 +30,7 @@ export const getOrdersService = async (query) => {
 
   const totalOrders = await Order.countDocuments(filter);
 
-  const orders = await Order.find(filter, { "__v": 0 })
+  const orders = await Order.find(filter, { "__v": 0,"createdAt":0,"updatedAt":0 })
     .populate("user", "name email -_id")
     .populate("items.bookId", "title author -_id")
     .sort({ [sortField]: sortOrder })
@@ -65,7 +65,7 @@ export const updateOrderService = async (orderId, updateData) => {
   if (Object.keys(filteredData).length === 0) {
     throw new ApiError(400, "No valid fields to update");
   }
-  const order = await Order.findById(orderId);
+  const order = await Order.findById(orderId,{"createdAt":0,"updatedAt":0,"__v":0});
   if (!order) {
     return null;
   }

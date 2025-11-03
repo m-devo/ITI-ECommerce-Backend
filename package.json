@@ -22,8 +22,9 @@
   },
   "homepage": "https://github.com/m-devo/ITI-ECommerce-Backend#readme",
   "dependencies": {
-    "assemblyai": "^4.18.5",
+    "@aws-sdk/client-rekognition": "^3.922.0",
     "amqplib": "^0.10.9",
+    "assemblyai": "^4.18.5",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
@@ -36,6 +37,7 @@
     "mongoose": "^8.19.0",
     "multer": "^2.0.2",
     "node-cron": "^4.2.1",
+    "node-summarizer": "^1.0.7",
     "nodemailer": "^7.0.7",
     "openai": "^6.5.0",
     "openai-whisper": "^1.0.2",
