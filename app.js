@@ -19,7 +19,7 @@ import { createRateLimiter } from './src/middlewares/rateLimit.middleware.js'
 import complaintsRouter from "./src/routes/complaints.routes.js"
 import publicRouter from "./src/routes/booksUser.route.js"
 import authorRouter from "./src/routes/authorrequest.route.js"
-
+import cors from "cors"
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger.js";
 import searchRoutes from "./src/routes/fullTextSearch.route.js";
@@ -55,6 +55,7 @@ app.set('trust proxy', 1);
 const apiLimiter = createRateLimiter();
 app.use('/api', apiLimiter);
 
+app.use(cors());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
