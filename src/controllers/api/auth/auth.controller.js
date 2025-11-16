@@ -15,7 +15,7 @@ const getUserProfile = async (req, res) => {
 
 // register a new user
 const registerUser = async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
   // if the user already exists check it
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -37,7 +37,7 @@ const registerUser = async (req, res) => {
     lastName,
     email,
     password: hashedPassword,
-    role,
+    role: role || "user",
     verificationToken,
     verificationTokenExpires: expires,
     isVerified: false,
@@ -51,7 +51,7 @@ const registerUser = async (req, res) => {
       status: "success",
       message:
         "User registered successfully. Please check your email to verify your account.",
-      data: { firstName, lastName, email, role },
+      data: { firstName, lastName, email, role: newUser.role },
     });
   } catch (emailError) {
     await User.findByIdAndDelete(newUser._id);
@@ -372,23 +372,19 @@ const googleAuthSuccess = async (req, res) => {
     user.activeSessionToken = token;
     await user.save();
 
-    res.json({
-      status: "success",
-      message: "Google authentication successful",
-      token: token,
-      data: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified,
-      },
-    });
+    // Redirect to Angular frontend with user data
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4200";
+    const redirectUrl = `${frontendUrl}/auth/google/callback?token=${token}&firstName=${encodeURIComponent(
+      user.firstName
+    )}&lastName=${encodeURIComponent(user.lastName)}&email=${encodeURIComponent(
+      user.email
+    )}&role=${user.role}&isVerified=${user.isVerified}`;
+
+    res.redirect(redirectUrl);
   } catch (error) {
-    res.status(500).json({
-      status: "error",
-      message: "Failed to complete Google authentication",
-    });
+    // On error, redirect to login with error message
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4200";
+    res.redirect(`${frontendUrl}/auth/login?error=google_auth_failed`);
   }
 };
 
