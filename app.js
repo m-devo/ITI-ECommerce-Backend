@@ -36,6 +36,7 @@ import reviewRoutes from "./src/routes/review.routes.js";
 import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js"
 import { consumeEmailQueue } from "./src/utils/orderEmailQueue.js";
 import { fileURLToPath } from "url";
+import cors from "cors";
 
 /***************Web Socket*************/
 import http from "http"
@@ -81,7 +82,7 @@ app.use("/api/admin/book", bookRouter);
 app.use("/api/admin/order", orderRouter);
 
 app.use("/api/public", publicRouter)
-app.use("/api",authorRouter)
+app.use("/api", authorRouter)
 //daily report***
 app.use("/api/reports", reportRouter);
 
@@ -121,16 +122,16 @@ app.use(errorHandler);
 
 /***************Web Socket*************/
 const server = http.createServer(app)
-chatService.initializeChat(server) 
+chatService.initializeChat(server)
 /***************Web Socket*************/
 
 server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 
 async function softShutdown() {
   console.log("Received kill signal");
-  
+
   server.close(async () => {
     console.log("HTTP server closed.");
 
@@ -144,13 +145,13 @@ async function softShutdown() {
         await redisClient.quit();
         console.log("Redis connection closed.");
       }
-      
+
       console.log("All connections closed. Exiting process.");
       process.exit(0);
 
     } catch (error) {
       console.error("Error during so shutdown:", error);
-      process.exit(1); 
+      process.exit(1);
     }
   });
 

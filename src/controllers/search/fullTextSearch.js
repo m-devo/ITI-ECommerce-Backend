@@ -11,8 +11,11 @@ export const searchBooks = async (req, res) => {
 
         const results = await Book.find(
             { $text: { $search: query } },
-            { score: { $meta: "textScore" } }
-        ).sort({ score: { $meta: "textScore" } });
+            { score: { $meta: "textScore" }}
+            
+        ).sort({ score: { $meta: "textScore" } })
+        .select("-bookPath");
+
 
         res.status(200).json(new ApiResponse(200, results, "Searched Books"))
     } catch (error) {
@@ -30,8 +33,8 @@ export const suggestBooks = async (req, res) => {
         const suggestions = await Book.find(
             { title: { $regex: query, $options: "i" } }
         )
-            .limit(5)
-            .select("title author");
+            
+            .select("-bookPath ");
 
         return res.status(200).json(new ApiResponse(200, suggestions, "Searched Books"))
 
@@ -43,7 +46,7 @@ export const suggestBooks = async (req, res) => {
 //  Faceted Search (Filtering)
 export const facetSearch = async (req, res) => {
     try {
-        const { author, minPrice, maxPrice } = req.query;
+        const { author, minPrice, maxPrice , category } = req.query;
 
         const filter = {};
 
@@ -54,8 +57,10 @@ export const facetSearch = async (req, res) => {
                 ...(maxPrice && { $lte: Number(maxPrice) }),
             };
         }
+        if (category) filter.category = category;
 
-        const results = await Book.find(filter);
+        const results = await Book.find(filter).select("-bookPath ");
+        
         return res.status(200).json(new ApiResponse(200, results, "Searched Books"))
     } catch (error) {
         throw new ApiError(500, 'Server Error')

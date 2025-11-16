@@ -9,7 +9,7 @@
         schema:
           type: string
         required: true
-        description: Text to search within book titles or descriptions
+        description: Text to search within book titles or descriptions or categories
         example: "database"
     responses:
       "200":
@@ -46,14 +46,7 @@
             schema:
               type: array
               items:
-                type: object
-                properties:
-                  title:
-                    type: string
-                    example: "Harry Potter"
-                  author:
-                    type: string
-                    example: "J.K. Rowling"
+                $ref: "#/components/schemas/Book"
       "400":
         description: Missing query
       "500":
@@ -61,7 +54,7 @@
 
 /api/search/facets:
   get:
-    summary: Filter books by author and price range
+    summary: Filter books by author, category and price range
     tags:
       - Search
     parameters:
@@ -71,6 +64,12 @@
           type: string
         required: false
         example: "George Orwell"
+      - in: query
+        name: category
+        schema:
+          type: string
+        required: false
+        example: "Programming"
       - in: query
         name: minPrice
         schema:
