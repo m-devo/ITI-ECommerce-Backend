@@ -9,7 +9,7 @@
         schema:
           type: string
         required: true
-        description: Text to search within book titles or descriptions
+        description: Text to search within book titles or descriptions or categories
         example: "database"
     responses:
       "200":

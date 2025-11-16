@@ -11,8 +11,11 @@ export const searchBooks = async (req, res) => {
 
         const results = await Book.find(
             { $text: { $search: query } },
-            { score: { $meta: "textScore" } }
-        ).sort({ score: { $meta: "textScore" } });
+            { score: { $meta: "textScore" }}
+            
+        ).sort({ score: { $meta: "textScore" } })
+        .select("-bookPath");
+
 
         res.status(200).json(new ApiResponse(200, results, "Searched Books"))
     } catch (error) {
@@ -30,8 +33,8 @@ export const suggestBooks = async (req, res) => {
         const suggestions = await Book.find(
             { title: { $regex: query, $options: "i" } }
         )
-            .limit(5)
-            .select("title author");
+            
+            .select("-bookPath ");
 
         return res.status(200).json(new ApiResponse(200, suggestions, "Searched Books"))
 
