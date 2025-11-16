@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 const bookUpdateItemSchema = Joi.object({
     bookId: Joi.string().hex().length(24).required(),
+    title: Joi.string(),
     quantity: Joi.number().integer().min(0).required()
 });
 
