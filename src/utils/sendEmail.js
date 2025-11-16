@@ -9,7 +9,9 @@ export const sendVerificationEmail = async (email, token) => {
     },
   });
 
-  const verificationLink = `${process.env.BASE_URL}/api/auth/verify/${token}`;
+  // Point to Angular frontend
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4200";
+  const verificationLink = `${frontendUrl}/auth/verify/${token}`;
 
   const mailOptions = {
     from: `"Your Favorite Book Store Website" <${process.env.EMAIL_USER}>`,
@@ -35,7 +37,9 @@ export const sendDeviceVerificationEmail = async (email, token) => {
     },
   });
 
-  const verificationLink = `${process.env.BASE_URL}/api/auth/verify-device/${token}`;
+  // Point to Angular frontend
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4200";
+  const verificationLink = `${frontendUrl}/auth/verify-device/${token}`;
 
   const mailOptions = {
     from: `"Your Favorite Book Store Website" <${process.env.EMAIL_USER}>`,
@@ -64,7 +68,9 @@ export const sendPasswordResetEmail = async (email, token) => {
     },
   });
 
-  const resetLink = `${process.env.BASE_URL}/api/auth/reset-password/${token}`;
+  // Point to Angular frontend
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:4200";
+  const resetLink = `${frontendUrl}/auth/reset-password/${token}`;
 
   const mailOptions = {
     from: `"Your Favorite Book Store Website" <${process.env.EMAIL_USER}>`,

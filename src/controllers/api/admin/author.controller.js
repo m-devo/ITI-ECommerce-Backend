@@ -15,9 +15,7 @@ import {handleAuthorFiles} from "../../../middlewares/authorUpload.middleware.js
 export const createAuthorRequest = catchAsync(async (req, res, next) => {
   const userId = req.user?._id;
   if (!userId) throw new ApiError(401, "Unauthorized: User not logged in.");
-
-  const { fullName, bio } = req.body;
-
+const { fullName, bio } = req.body;
   const existingRequest = await AuthorRequest.findOne({ user: userId }).sort({ createdAt: -1 });
   if (existingRequest && existingRequest.status === "pending") {
     throw new ApiError(400, "You already have a pending author request.");
@@ -32,7 +30,7 @@ export const createAuthorRequest = catchAsync(async (req, res, next) => {
     fullName,
     bio,
     idCard: req.savedFiles.idCard,
-    selfie: req.savedFiles.selfie,
+    selfie: req.savedFiles.selfie
   });
 
   return res
@@ -100,7 +98,7 @@ export const getAuthorRequest = catchAsync(async (req, res, next) => {
     .json(new ApiResponse(200, lastRequest, "Author request retrieved successfully."));
 });
 
-
+//  admin
 export const getAllAuthorRequests = catchAsync(async (req, res, next) => {
   const { page = 1, limit = 10, status } = req.query;
 

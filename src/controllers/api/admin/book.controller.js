@@ -8,12 +8,12 @@ import ApiResponse from "../../../utils/ApiResponse.js"
 import catchAsync from "../../../utils/catchAsync.js"
 import s3 from "../../../../config/s3config.js"
 
-const getBooks  = catchAsync(async (req, res, next) => {
+const getBooks = catchAsync(async (req, res, next) => {
   const { limit = 10, page = 1, author, category, minPrice, maxPrice, title } = req.query;
   const skip = (page - 1) * limit;
-  const filter = { isDeleted: false }; 
+  const filter = { isDeleted: false };
 
-  if (author) filter.author = { $regex: author, $options: "i" }; 
+  if (author) filter.author = { $regex: author, $options: "i" };
   if (category) filter.category = { $regex: category, $options: "i" };
   if (title) filter.title = { $regex: title, $options: "i" };
 
@@ -23,17 +23,36 @@ const getBooks  = catchAsync(async (req, res, next) => {
     if (maxPrice) filter.price.$lte = Number(maxPrice);
   }
 
-  const books = await Book.find(filter, { "__v": 0,"descriptionVector":0,"recomendedBooks":0 })
+ 
+  const totalBooks = await Book.countDocuments(filter);
+
+ 
+  const books = await Book.find(filter, {
+    "__v": 0,
+    "createdAt": 0,
+    "updatedAt": 0,
+    "descriptionVector": 0,
+    "recomendedBooks": 0,
+    "uploadedAt": 0
+  })
     .limit(parseInt(limit))
     .skip(parseInt(skip));
 
   if (!books.length) {
     return res.status(404).json(new ApiResponse(404, [], 'No books found'));
   }
+    const responseData = {
+    totalBooks,
+    currentPage: parseInt(page),
+    totalPages: Math.ceil(totalBooks / limit),
+    results: books.length,
+    data: books,
+  };
 
-  return res.status(200).json(new ApiResponse(200, books, 'Books fetched successfully'));
+ 
+  return res.status(200).json(new ApiResponse(200, responseData, 'Books fetched successfully'));
 });
-// 
+
 
 const getOneBook = catchAsync(async (req, res, next) => {
   const { ID } = req.params;
@@ -42,7 +61,10 @@ const getOneBook = catchAsync(async (req, res, next) => {
     return res.status(400).json(new ApiResponse(400, null, 'Invalid Book ID.'));
   }
 
-  const book = await Book.findOne({ _id: ID, isDeleted: false }, { "__v": 0 });
+  const book = await Book.findOne(
+    { _id: ID, isDeleted: false },
+    { "__v": 0, "createdAt": 0, "updatedAt": 0 }
+  );
 
   if (!book) {
     return res.status(404).json(new ApiResponse(404, null, 'Book not found'));
@@ -52,9 +74,9 @@ const getOneBook = catchAsync(async (req, res, next) => {
 });
 
 
-const createBook = catchAsync(async(req,res,next)=>{
-    const {title,author,stock,description,price,category} = req.body
-    const { imagePath, bookPath } = req.savedFiles || {}
+const createBook = catchAsync(async (req, res, next) => {
+  const { title, author, stock, description, price, category } = req.body;
+  const { imagePath, bookPath } = req.savedFiles || {};
 
   const newBook = await Book.create({
     title,
@@ -67,11 +89,24 @@ const createBook = catchAsync(async(req,res,next)=>{
     category,
     isDeleted: false 
   });
-    return res
-    .status(201)
-    .json(new ApiResponse(201, newBook, 'Book created successfully'));
 
-})
+  const cleanBook = {
+    _id: newBook._id,
+    title: newBook.title,
+    author: newBook.author,
+    category: newBook.category,
+    price: newBook.price,
+    stock: newBook.stock,
+    imagePath: newBook.imagePath,
+    bookPath:newBook.bookPath,
+    isDeleted:false
+  };
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, cleanBook, 'Book created successfully'));
+});
+
 
 const updateBook = catchAsync(async (req, res, next) => {
   try {
@@ -101,27 +136,21 @@ const updateBook = catchAsync(async (req, res, next) => {
       }
     });
 
-
     if (req.files?.book?.[0]) {
       const bookFile = req.files.book[0];
-      console.log('New book file received:', bookFile.originalname);
-
       if (book.bookPath) {
         const oldBookKey = extractKeyFromUrl(book.bookPath);
-        console.log('Deleting old book file from S3:', oldBookKey);
         try {
           await s3.deleteObject({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: oldBookKey,
           }).promise();
-          console.log('Old book deleted successfully');
         } catch (err) {
           console.error('Failed to delete old book:', err.message);
         }
       }
 
       try {
-        console.log('Uploading new book file...');
         const uploadBook = await s3.upload({
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: `books/${Date.now()}-${bookFile.originalname}`,
@@ -129,32 +158,27 @@ const updateBook = catchAsync(async (req, res, next) => {
           ContentType: bookFile.mimetype,
         }).promise();
 
-        console.log('New book uploaded:', uploadBook.Location);
         book.bookPath = uploadBook.Location; 
       } catch (err) {
         console.error('Failed to upload new book:', err.message);
       }
     }
+
     if (req.files?.image?.[0]) {
       const imageFile = req.files.image[0];
-      console.log('New image file received:', imageFile.originalname);
-
       if (book.imagePath) {
         const oldImageKey = extractKeyFromUrl(book.imagePath);
-        console.log('Deleting old image from S3:', oldImageKey);
         try {
           await s3.deleteObject({
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: oldImageKey,
           }).promise();
-          console.log('Old image deleted successfully');
         } catch (err) {
           console.error('Failed to delete old image:', err.message);
         }
       }
 
       try {
-        console.log('Uploading new image...');
         const uploadImage = await s3.upload({
           Bucket: process.env.AWS_BUCKET_NAME,
           Key: `images/${Date.now()}-${imageFile.originalname}`,
@@ -162,7 +186,6 @@ const updateBook = catchAsync(async (req, res, next) => {
           ContentType: imageFile.mimetype,
         }).promise();
 
-        console.log('New image uploaded:', uploadImage.Location);
         book.imagePath = uploadImage.Location; 
       } catch (err) {
         console.error('Failed to upload new image:', err.message);
@@ -170,18 +193,27 @@ const updateBook = catchAsync(async (req, res, next) => {
     }
 
     await book.save();
-    console.log('Book updated in database successfully');
+    const cleanBook = {
+      _id: book._id,
+      title: book.title,
+      author: book.author,
+      category: book.category,
+      price: book.price,
+      stock: book.stock,
+      imagePath: book.imagePath,
+      bookPath:book.bookPath,
+      isDeleted:false
+    };
 
-    return res.status(200).json(new ApiResponse(200, book, 'Book updated successfully'));
+    return res.status(200).json(new ApiResponse(200, cleanBook, 'Book updated successfully'));
   } catch (error) {
     console.error('Error in updateBook:', error);
     return res.status(500).json(new ApiResponse(500, null, 'Error updating book'));
   }
 });
 
-
-const deleteBook =catchAsync(async (req, res, next) => {
-  const { ID }  = req.params;
+const deleteBook = catchAsync(async (req, res, next) => {
+  const { ID } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(ID)) {
     return res
@@ -193,15 +225,65 @@ const deleteBook =catchAsync(async (req, res, next) => {
   if (!book || book.isDeleted) {
     return res
       .status(404)
-      .json(new ApiResponse(404, null, 'Book not found'));
+      .json(new ApiResponse(404, null, 'Book not found.'));
   }
 
   book.isDeleted = true;
   await book.save();
+  return res.status(204).send();
+});
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, book, 'Book marked as deleted.'));
+const updateBookAuthor = catchAsync(async (req, res, next) => {
+  try {
+    const { ID } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(ID)) {
+      return res.status(400).json(new ApiResponse(400, null, 'Invalid Book ID.'));
+    }
+
+    const book = await Book.findById(ID);
+    if (!book) {
+      return res.status(404).json(new ApiResponse(404, null, 'Book not found'));
+    }
+
+    const fieldsToUpdate = [
+      'title',
+      'author',
+      'description',
+      'category',
+      'price',
+      'imagePath',
+      'reviewCount',
+    ];
+
+    fieldsToUpdate.forEach((field) => {
+      if (req.body[field] !== undefined && req.body[field] !== '') {
+        book[field] = req.body[field];
+      }
+    });
+
+    await book.save();
+
+    const cleanBook = {
+      _id: book._id,
+      title: book.title,
+      author: book.author,
+      description: book.description,
+      category: book.category,
+      price: book.price,
+      imagePath: book.imagePath,
+      reviewCount: book.reviewCount,
+      isDeleted: false,
+    };
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, cleanBook, 'Book updated successfully'));
+  } catch (error) {
+    console.error('Error in updateBook:', error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, null, 'Error updating book'));
+  }
 });
 
 
@@ -212,7 +294,8 @@ export {
   getBooks,
   getOneBook,
   updateBook,
-  deleteBook
+  deleteBook,
+  updateBookAuthor
 }
 
 

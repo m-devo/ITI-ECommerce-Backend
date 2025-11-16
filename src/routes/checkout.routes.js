@@ -9,7 +9,7 @@ import { handleIdempotency } from '../middlewares/handleIdempotency.middleware.j
 const router = Router();
 
 
-router.post('/pre', isAuth , CheckoutController.preCheckout);
+router.get('/pre', isAuth , CheckoutController.preCheckout);
 
 router.post('/', isAuth , validate(checkoutSchema) , handleIdempotency , CheckoutController.createCheckoutSession);
 

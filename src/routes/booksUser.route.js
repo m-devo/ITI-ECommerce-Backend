@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import {getAllBooks, getBookById} from "../controllers/api/users/booksUser.controller.js"
+import {getAllBooks, getBookById
+} from "../controllers/api/users/booksUser.controller.js"
 const router = Router();
 
 

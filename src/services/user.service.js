@@ -8,7 +8,8 @@ export const UserService = {
 
   async getAllUsers(filters = {}, page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-    const users = await User.find(filters)
+    const users = await User.find(filters,{"__v":0,"verificationToken":0,
+      "verificationTokenExpires":0,"activeSessionToken":0,"updatedAt":0})
       .select('-password')
       .skip(skip)
       .limit(parseInt(limit));
@@ -25,14 +26,16 @@ export const UserService = {
   },
 
   async getUserById(userId) {
-    const user = await User.findById(userId).select('-password');
+    const user = await User.findById(userId,{"__v":0,"verificationToken":0,
+      "verificationTokenExpires":0,"activeSessionToken":0,"updatedAt":0}).select('-password');
     if (!user) {
       throw new ApiError(404, 'User not found');
     }
     return user;
   },
   async updateUser(userId) {
-     const user = await User.findById(userId).select('-password');
+     const user = await User.findById(userId,{"__v":0,"verificationToken":0,
+      "verificationTokenExpires":0,"activeSessionToken":0,"updatedAt":0}).select('-password');
     if (!user) {
       throw new ApiError(404, 'User not found');
     }

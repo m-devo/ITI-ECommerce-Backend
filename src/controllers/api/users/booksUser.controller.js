@@ -4,13 +4,14 @@ import ApiError from "../../../utils/ApiError.js"
 import ApiResponse from "../../../utils/ApiResponse.js"
 import catchAsync from "../../../utils/catchAsync.js"
 import mongoose from "mongoose";
+import SummarizerManager from "node-summarizer";
 export const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const skip = (page - 1) * limit;
 
     const books = await Book.aggregate([
-      { $match: { isDeleted: false } }, 
+      { $match: { isDeleted: false } },
       {
         $lookup: {
           from: "reviews",
@@ -19,26 +20,33 @@ export const getAllBooks = async (req, res) => {
           as: "reviews",
         },
       },
+
       {
         $addFields: {
           reviewCount: { $size: "$reviews" },
           averageRating: {
             $cond: [
               { $gt: [{ $size: "$reviews" }, 0] },
-              { $round: [{ $avg: "$reviews.rating" }, 0] },
+              { $round: [{ $avg: "$reviews.rating" }, 1] },
               0,
             ],
           },
         },
       },
-      { 
-        $project: { 
-          reviews: 0, 
-          description: 0,
-          __v: 0,
-          stock:0,
-          isDeleted:0
-        } 
+
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          category: 1,
+          price: 1,
+          stock: 1,
+          imagePath: 1,
+          uploadedAt: 1,
+          averageRating: 1,
+          reviewCount: 1,
+        },
       },
       { $sort: { uploadedAt: -1 } },
       { $skip: skip },
@@ -59,9 +67,6 @@ export const getAllBooks = async (req, res) => {
   }
 };
 
-
-
-
 export const getBookById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,6 +77,7 @@ export const getBookById = async (req, res) => {
 
     const book = await Book.aggregate([
       { $match: { _id: new mongoose.Types.ObjectId(id), isDeleted: false } },
+
       {
         $lookup: {
           from: "reviews",
@@ -92,11 +98,13 @@ export const getBookById = async (req, res) => {
           },
         },
       },
+
       {
         $project: {
-          bookPath: 0,
           __v: 0,
           isDeleted: 0,
+          bookPath: 0,
+          uploadedAt: 0,
           "reviews.__v": 0,
           "reviews.updatedAt": 0,
           "reviews.book": 0,
@@ -111,7 +119,7 @@ export const getBookById = async (req, res) => {
               in: {
                 user: "$$r.user",
                 rating: "$$r.rating",
-                comment: { $ifNull: ["$$r.comment", "$$r.transcation"] },
+                comment: { $ifNull: ["$$r.comment", ""] },
                 createdAt: "$$r.createdAt",
               },
             },
@@ -132,3 +140,4 @@ export const getBookById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+

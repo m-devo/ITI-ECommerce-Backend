@@ -1,14 +1,11 @@
 import express from "express";
-import newsServiceController from "../controllers/api/news/news.controller.js";
-import protect from "../middlewares/protect.middleware.js"
-import restrictTo from "../middlewares/restrictTo.middleware.js"
-
+import {subscribeToNewsletter, unsubscribeFromNewsletter}  from "../controllers/api/news/news.controller.js";
+import { isAuth } from '../middlewares/isAuth.middleware.js'; 
 const newsRouter = express.Router();
 
-newsRouter.post("/weeklynews", 
-    protect,
-    restrictTo("admin"),
-    newsServiceController
-);
+newsRouter.post('/subscribe', subscribeToNewsletter);
+
+newsRouter.patch('/unsubscribe', isAuth, unsubscribeFromNewsletter);
+
 
 export default newsRouter;

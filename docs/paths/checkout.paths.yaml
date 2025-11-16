@@ -1,6 +1,6 @@
 paths:
   /api/checkout/pre:
-    post:
+    get:
       summary: Get pre-checkout information including cart total and items
       tags: [Checkout]
       security:

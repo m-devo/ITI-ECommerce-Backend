@@ -6,13 +6,6 @@ const authorRequestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-
-    fullName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     bio: {
       type: String,
       maxlength: 500,
