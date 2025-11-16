@@ -7,12 +7,13 @@ import ApiError from "../../../utils/ApiError.js"
 import ApiResponse from "../../../utils/ApiResponse.js"
 import catchAsync from "../../../utils/catchAsync.js"
 import s3 from "../../../../config/s3config.js"
+
 const getBooks = catchAsync(async (req, res, next) => {
   const { limit = 10, page = 1, author, category, minPrice, maxPrice, title } = req.query;
   const skip = (page - 1) * limit;
-  const filter = { isDeleted: false }; 
+  const filter = { isDeleted: false };
 
-  if (author) filter.author = { $regex: author, $options: "i" }; 
+  if (author) filter.author = { $regex: author, $options: "i" };
   if (category) filter.category = { $regex: category, $options: "i" };
   if (title) filter.title = { $regex: title, $options: "i" };
 
@@ -22,13 +23,17 @@ const getBooks = catchAsync(async (req, res, next) => {
     if (maxPrice) filter.price.$lte = Number(maxPrice);
   }
 
-  const books = await Book.find(filter, { 
+ 
+  const totalBooks = await Book.countDocuments(filter);
+
+ 
+  const books = await Book.find(filter, {
     "__v": 0,
     "createdAt": 0,
     "updatedAt": 0,
     "descriptionVector": 0,
     "recomendedBooks": 0,
-    "uploadedAt":0
+    "uploadedAt": 0
   })
     .limit(parseInt(limit))
     .skip(parseInt(skip));
@@ -36,8 +41,16 @@ const getBooks = catchAsync(async (req, res, next) => {
   if (!books.length) {
     return res.status(404).json(new ApiResponse(404, [], 'No books found'));
   }
+    const responseData = {
+    totalBooks,
+    currentPage: parseInt(page),
+    totalPages: Math.ceil(totalBooks / limit),
+    results: books.length,
+    data: books,
+  };
 
-  return res.status(200).json(new ApiResponse(200, books, 'Books fetched successfully'));
+ 
+  return res.status(200).json(new ApiResponse(200, responseData, 'Books fetched successfully'));
 });
 
 

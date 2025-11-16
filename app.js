@@ -36,7 +36,7 @@ import reviewRoutes from "./src/routes/review.routes.js";
 import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js";
 import { consumeEmailQueue } from "./src/utils/orderEmailQueue.js";
 import { fileURLToPath } from "url";
-
+import cors from "cors"
 /***************Web Socket*************/
 import http from "http";
 import chatService from "./src/chatbot/chat.service.js";
@@ -58,6 +58,13 @@ try {
 startOrdersReconciliationCron();
 
 app.set("trust proxy", 1);
+
+app.use(cors({
+  origin: 'http://localhost:4200', 
+  credentials: true
+}));
+app.set('trust proxy', 1);
+
 const apiLimiter = createRateLimiter();
 app.use("/api", apiLimiter);
 
