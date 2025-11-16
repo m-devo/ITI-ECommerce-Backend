@@ -8,6 +8,10 @@ const orderSchema = new mongoose.Schema({
             ref: 'Book',
             required: true
         },
+        title: {
+            type: String,
+            required: true
+        },
         quantity: {
             type: Number,
             required: true,
