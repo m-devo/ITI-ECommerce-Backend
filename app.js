@@ -47,28 +47,20 @@ const PORT = process.env.PORT || 4000;
 connectDB();
 redisConnection(); // opening redis connection
 
-// Connect to RabbitMQ (optional in development)
-try {
-  await connectRabbitMQ();
-  await consumeEmailQueue(); // start email consumer only if RabbitMQ is available
-} catch (error) {
-  console.warn("⚠️  Skipping RabbitMQ features due to connection failure");
-}
+await connectRabbitMQ();
+await consumeEmailQueue();
 
 startOrdersReconciliationCron();
 
 app.set("trust proxy", 1);
 
 app.use(cors({
-  origin: 'http://localhost:4200', 
+  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
   credentials: true
 }));
-app.set('trust proxy', 1);
 
 const apiLimiter = createRateLimiter();
 app.use("/api", apiLimiter);
-
-app.use(cors());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
