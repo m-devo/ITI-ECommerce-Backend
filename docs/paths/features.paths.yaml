@@ -33,7 +33,7 @@ paths:
                 message: "No book of the day found"
                 success: false
 
-  /api/features/{id}/manual-book-of-the-day:
+  /api/features/manual-book-of-the-day/{id}:
     post:
       summary: Set a book as "Book of the Day" (Admin)
       tags: [Book Features]
@@ -99,37 +99,100 @@ paths:
                 statusCode: 403
                 message: "You do not have permission to perform this action"
                 success: false
- 
-  /api/features/homepage:
-    get:
-      summary: Get cached data for the homepage
-      tags: [Book Features]
-      description: >
-        Retrieves the main data for the homepage. This endpoint is cached.
-        It returns the latest books and the featured book of the day.
-      responses:
-        "200":
-          description: Homepage data retrieved successfully (from cache or database).
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-              example:
-                statusCode: 200
-                data:
-                  latestBooks:
-                    - _id: "68e817158483527382d205ea"
-                      title: "Three Body Problems"
-                      author: "Liu Cixin"
-                      price: 40
-                  featuredBook:
-                    _id: "68e7ed98aa7000812ffe6213"
-                    title: "Twilight"
-                    author: "Stephenie Meyer"
-                    price: 200
-                    featuredAt: "2025-10-23T03:00:00.000Z"
-                message: "Data retrieved from database"
-                success: true
+/api/features/homepage:
+  get:
+    summary: Get cached homepage data (Best Sellers, Featured Book, Top Categories)
+    tags: [Book Features]
+    description: >
+      Returns homepage data including best-selling books, the featured "Book of the Day",
+      and top three book categories.  
+      Data is cached for 10 minutes (600 seconds).  
+      If cache exists, the response message will indicate "Data retrieved from cache",
+      otherwise "Data retrieved from database".
+    responses:
+      "200":
+        description: Homepage data retrieved successfully
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiResponse"
+            examples:
+              CacheHit:
+                summary: Response from Cache
+                value:
+                  statusCode: 200
+                  data:
+                    bestSellers:
+                      - _id: "68e817158483527382d205ea"
+                        title: "The Three-Body Problem"
+                        author: "Liu Cixin"
+                        price: 40
+                        averageRating: 4.8
+                        reviewCount: 1234
+                        imagePath: "uploads/books/threebody.webp"
+                    featuredBook:
+                      _id: "68e7ed98aa7000812ffe6213"
+                      title: "Twilight"
+                      author: "Stephenie Meyer"
+                      price: 200
+                      featuredAt: "2025-10-23T03:00:00.000Z"
+                      imagePath: "uploads/books/twilight.webp"
+                    categorySummary:
+                      - category: "Science Fiction"
+                        count: 45
+                        imagePath: "uploads/categories/scifi.webp"
+                      - category: "Fantasy"
+                        count: 38
+                        imagePath: "uploads/categories/fantasy.webp"
+                      - category: "Mystery"
+                        count: 32
+                        imagePath: "assets/images/category-design.avif"
+                  message: "Data retrieved from cache"
+                  success: true
+
+              DatabaseResponse:
+                summary: Response from Database (Cache Miss)
+                value:
+                  statusCode: 200
+                  data:
+                    bestSellers:
+                      - _id: "78e817158483527382d205ea"
+                        title: "The Silent Patient"
+                        author: "Alex Michaelides"
+                        price: 55
+                        averageRating: 4.5
+                        reviewCount: 870
+                        imagePath: "uploads/books/silentpatient.webp"
+                    featuredBook:
+                      _id: "68e7ed98aa7000812ffe6213"
+                      title: "Twilight"
+                      author: "Stephenie Meyer"
+                      price: 200
+                      featuredAt: "2025-10-23T03:00:00.000Z"
+                      imagePath: "uploads/books/twilight.webp"
+                    categorySummary:
+                      - category: "Thriller"
+                        count: 40
+                        imagePath: "uploads/categories/thriller.webp"
+                      - category: "History"
+                        count: 35
+                        imagePath: "uploads/categories/history.webp"
+                      - category: "Romance"
+                        count: 30
+                        imagePath: "assets/images/category-design.avif"
+                  message: "Data retrieved from database"
+                  success: true
+
+      "500":
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+            example:
+              statusCode: 500
+              message: "Internal server error"
+              success: false
 
   /api/public/books:
     get:

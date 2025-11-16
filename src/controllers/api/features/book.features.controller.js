@@ -40,12 +40,55 @@ const cachehomeData = catchAsync(async (req, res, next) => {
     }
     
     console.log("Cache Miss: Fetching home data from database");
-    const [latestBooks, featuredBook] = await Promise.all([
-        Book.find().sort({ createdAt: -1 }).limit(5),
-        Book.findOne({ featuredAt: { $exists: true, $ne: null } })
-    ]);
+    const [bestSellers, featuredBook, categorySummary] = await Promise.all([
+      Book.find({ 
+            isDeleted: false, 
+            reviewCount: { $gt: 0 } 
+          })
+          .sort({ reviewCount: -1, averageRating: -1 }) 
+          .limit(4), 
+        Book.findOne({ featuredAt: { $exists: true, $ne: null } }),
 
-    const homeData = { latestBooks, featuredBook }; 
+    Book.aggregate([
+      { 
+        $match: { 
+          isDeleted: false, 
+          category: { $ne: null, $exists: true, $ne: "" } 
+        } 
+      },
+      
+      { 
+        $group: { 
+          _id: "$category", 
+          bookCount: { $sum: 1 }, 
+          imagePath: { $first: "$imagePath" } 
+        } 
+      },
+      
+      {
+        $addFields: {
+          imagePath: {
+            $ifNull: [ "$imagePath", "assets/images/category-design.avif" ]
+          }
+        }
+      },
+      
+      { $sort: { bookCount: -1 } }, 
+      
+      { $limit: 3 },
+
+      {
+        $project: {
+          _id: 0, 
+          category: '$_id', 
+          count: '$bookCount',
+          imagePath: '$imagePath'
+        }
+      }
+    ])
+]);
+
+const homeData = { bestSellers, featuredBook, categorySummary }; 
     
     // Set data in cache for 10 minutes (600 seconds)
     await cacheService.set(cacheKey, homeData, 600);
