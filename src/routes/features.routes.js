@@ -4,7 +4,7 @@ import protect from "../middlewares/protect.middleware.js";
 import restrictTo from "../middlewares/restrictTo.middleware.js";
 const featuresRouter = express.Router();
 
-featuresRouter.post("/:id/manual-book-of-the-day",
+featuresRouter.post("/manual-book-of-the-day/:id",
 // POST Book of the Day By Admin
 
     protect, 

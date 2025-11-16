@@ -5,8 +5,9 @@ import protect  from "../middlewares/protect.middleware.js";
 
 const compalintsRouter = express.Router();
 
+compalintsRouter.post('/user/create', protect, compliantsController.createNewComplaint); //create new complaint
 compalintsRouter.get('/user',protect, compliantsController.getUserComplaints);
-compalintsRouter.get('/user/:id', protect, compliantsController.getComplaintById);
+compalintsRouter.get('/user/:id', protect, compliantsController.getUserComplaintById);
 compalintsRouter.post('/user/:id/reply',protect, compliantsController.userReplyToComplaint); 
 
 compalintsRouter.get('/', protect, restrictTo("admin"), compliantsController.getAllComplaints);

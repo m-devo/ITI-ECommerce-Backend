@@ -1,6 +1,8 @@
 import { Complaint } from "../../../models/complaints.model.js";
 import notifyUser from "../../../chatbot/notifyUser.js";
+import { ComplaintService } from '../../../services/complaint.service.js';
 
+/* Admin */
 const getAllComplaints = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -119,6 +121,28 @@ const replyToComplaint = async (req, res, next) => {
         next(error);
     }
 };
+/* User */
+const createNewComplaint = async (req, res, next) => {
+    try {
+        const { details, orderId } = req.body;
+        const userId = req.user._id;
+
+        if (!details) {
+            return res.status(400).json({ status: "fail", message: "Complaint details are required" });
+        }
+
+        const newComplaint = await ComplaintService.createNewComplaint(userId, details, orderId);
+
+        res.status(201).json({
+            status: "success",
+            message: "Your complaint has been submitted successfully.",
+            data: { complaint: newComplaint }
+        });
+
+    } catch (error) { 
+        next(error); 
+    }
+};
 
 const getUserComplaints = async (req, res, next) => {
         const page = parseInt(req.query.page) || 1;
@@ -133,7 +157,8 @@ const getUserComplaints = async (req, res, next) => {
             .skip(skip)
             .limit(limit)
 
-        const totalComplaints = await Complaint.countDocuments({ user: req.user._id });            res.status(200).json({
+        const totalComplaints = await Complaint.countDocuments({ user: req.user._id });            
+        res.status(200).json({
             status: "success",
             data: {
                 complaints,
@@ -171,7 +196,7 @@ const userReplyToComplaint = async (req, res, next) => {
         const complaint = await Complaint.findOne({ _id: req.params.id, user: userId });
 
         if (!complaint) {
-            return res.status(404).json({ status: "fail", message: "Complaint not found or you don't have permission." });
+            return res.status(404).json({ status: "fail", message: "Complaint not found or don't have permission." });
         }
 
         if (complaint.status === 'closed') {
@@ -188,17 +213,22 @@ const userReplyToComplaint = async (req, res, next) => {
         }
         await complaint.save();
 
-        await complaint.populate("replies.sender", "firstName lastName email role");
+            const populatedComplaint = await Complaint.findById(complaint._id)
+            .populate("user", "firstName lastName email")
+            .populate("replies.sender", "firstName lastName email role");
 
         res.status(200).json({
             status: "success",
             message: "Your reply has been added.",
-            data: { complaint }
+            data: { complaint:populatedComplaint }
         });
 
     } catch (error) { next(error); }
 };
 
+
 export default { 
     getAllComplaints, getComplaintById, replyToComplaint, 
-    getUserComplaints, getUserComplaintById, userReplyToComplaint};
+    getUserComplaints, getUserComplaintById, userReplyToComplaint,
+    createNewComplaint
+};

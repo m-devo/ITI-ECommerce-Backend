@@ -6,8 +6,9 @@ import Book from "../models/bookSchema.js";
 import chatStateService from "./chat.state.js";
 import liveChatService from "./chat.livechat.js";
 import clients from "./chat.clients.js";
+import { ComplaintService } from '../services/complaint.service.js'; 
 
-
+const botThink = (duration = 1000) => new Promise(resolve => setTimeout(resolve, duration));
 async function routeCustomerMessage(ws, customerId, message, currentState, userRole, user) {
     console.log(`Routing message: "${message}" | for state: "${currentState}" | UserRole: ${userRole}`);
     const cleanMessage = message.toString().trim();
@@ -19,19 +20,18 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
 
             if (selection === "1") {
                 await chatStateService.updateChatState(customerId, "complaint_options");
-
+                await botThink();
                 ws.send(JSON.stringify({
-
                     message: "Sorry to hear that. Do you like:",
                     options: ["1. Contact us directly?", "2. Register a complaint?"]
                 }));
             } else if (selection === "2") {
                 await chatStateService.updateChatState(customerId, "awaiting_order_id");
+                await botThink();
                 ws.send(JSON.stringify({ message: "Sure, please enter your order ID" }));
-
             } else if (selection === "3") {
                 await chatStateService.updateChatState(customerId, "awaiting_nomination_criteria");
-                
+                await botThink();
                 ws.send(JSON.stringify({
                     message: "OK, what kind of book do you like? (Fantasy, Science Fiction, etc...) Write a keyword."
                 }));
@@ -63,6 +63,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                 ]
             }).limit(5).select("title author");
 
+            await botThink();
             if (!books || books.length === 0) {
                 ws.send(JSON.stringify({ message: `Sorry, we couldn't find any matching books "${criteria}".` }));
             } else {
@@ -81,7 +82,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                         options: ["1. I have a complaint", "2. Following an order", "3. Nominate a book"]
                     }));
                 }
-            }, 500);
+            }, 1200); 
 
         } catch (error) {
             console.error(`Error while searching for book "${criteria}"`, error);
@@ -89,22 +90,23 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
             await chatStateService.updateChatState(customerId, "main_menu");
         }
     }
-    /**************************complaint_options ***********************/
+    
     else if (currentState === "complaint_options") {
 
-        //Prevent Guests from requesting live chat
         if (userRole === 'guest' && cleanMessage.match(/^1/)) {
-            ws.send(JSON.stringify({ message: "Sorry, live chat is available for registered users only. You can register a complaint instead.", options: ["2. Register a compliant?"] }));
+            await botThink();
+            ws.send(JSON.stringify(
+                { message: "Sorry, live chat is available for registered users only. You can register a complaint instead.", 
+                options: ["2. Register a compliant?"] }));
             
-             return; // option 1
+             return; 
         }
 
         const comparison = cleanMessage.match(/^(\d)/);
         let selection = comparison ? comparison[1] : null;
 
-        if (selection === "1") { // Request Live Chat can be reached only if guest
+        if (selection === "1") { 
 
-            //Check Redis state for available admins
             let availableAdmins = false;
 
             for (const adminId of clients.adminClients.keys()) {
@@ -117,6 +119,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
             }
 
             if (!availableAdmins) {
+                await botThink()
                 ws.send(JSON.stringify(
                     { message: "Sorry, customer service is not available now." }
                 ));
@@ -127,14 +130,13 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                 ));
             } else {
                 await chatStateService.updateChatState(customerId, "live_chat_pending");
-
+                await botThink(1200);
                 ws.send(JSON.stringify(
                     { message: "Processing your request to customer service, please wait!" }
 
                 ));
                 const customerName = user ? user.firstName : `Customer ${customerId.substring(0, 4)}`;
 
-                // Send only to available admins
                 liveChatService.sendToAdmins({ 
                     type: "new_chat_request", 
                     data: { customerId: customerId, customerName: customerName } 
@@ -154,7 +156,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                                 ws.send(JSON.stringify({ 
                                     message: "Sorry, all customer service agents seem busy right now." }
                                 ));
-                                await new Promise(resolve => setTimeout(resolve, 300)); 
+                                await new Promise(resolve => setTimeout(resolve, 500)); 
                                 ws.send(JSON.stringify({ 
                                     message: "Please choose: ",
                                     options: ["1. Keep waiting for customer service", "2. Register a complaint"]}
@@ -164,16 +166,16 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                     } catch (err) {
                         console.error("Error during live chat timeout check:", err);
                     }
-                }, 240000); // 4 minutes
+                }, 240000); 
             }
-        } else if (selection === "2") { // Register Complaint
+        } else if (selection === "2") { 
             await chatStateService.updateChatState(customerId, "awaiting_compliant_details");
-
+            await botThink();
             ws.send(JSON.stringify({ 
                 message: "Excellent, please write your compliant to process" }
             ));
 
-        } else { // Invalid selection
+        } else { 
 
             ws.send(JSON.stringify({ 
                 message: "Sorry, i can't process your message, please choose:", 
@@ -181,7 +183,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
             }));
         }
     }
-    // State: awaiting_order_id
+    
     else if (currentState === "awaiting_order_id") {
         const orderId = cleanMessage;
         let orderResultResponse = null;
@@ -217,6 +219,7 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
             orderResultResponse = { error: "Technical error, please try again" };
         }
         await chatStateService.updateChatState(customerId, "main_menu");
+        await botThink();
         if (orderResultResponse) {
             ws.send(JSON.stringify(orderResultResponse));
         }
@@ -227,10 +230,10 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                     options: ["1. I have a compliant", "2. Following an order", "3. Nominate a book"] }
                 ));
             }
-        }, 500); 
+        }, 1200); 
     }
 
-    //State: awaiting_compliant_details
+    
     else if (currentState === "awaiting_compliant_details") {
         const complaintDetails = cleanMessage;
 
@@ -241,41 +244,59 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
 
             complaintResultResponse = {message: `Please login to use this service.`};
             await chatStateService.updateChatState(customerId, "main_menu");
-
             shouldGoToMainMenu = true;
+
         } else {
-            console.log(`New complaint from ${customerId} (${user?.email}): ${complaintDetails}`); // Add email if available
             try {
-                await Complaint.create({ 
-                    user: customerId, 
-                    details: complaintDetails, 
-                    status: "new" 
+                const existingComplaint = await Complaint.findOne({
+                    user: customerId,
+                    status: { $ne: 'closed' } 
                 });
 
-                liveChatService.sendToAdmins({ 
-                    type: "new complaint", 
-                    data: 
-                    { 
-                        customerId: customerId, 
-                        userEmail: user?.email, 
+                if (existingComplaint) {
+                    await botThink();
+                    complaintResultResponse = { 
+                        message: `You already have an open complaint. 
+                        You cannot submit a new one while the current one is being processed.` 
+                    };
+                    await chatStateService.updateChatState(customerId, "main_menu");
+                    shouldGoToMainMenu = true;
+                } else {
+                    console.log(`New complaint from ${customerId} (${user?.email}): ${complaintDetails}`);
+                    await Complaint.create({ 
+                        user: customerId, 
                         details: complaintDetails, 
-                        timestamp: new Date().toISOString() 
-                    }
-                    })
-                complaintResultResponse = { 
-                    message: "Your compliant has been recieved successfully, we will contact you soon." };
+                        status: "new" 
+                    });
+                    await ComplaintService.createNewComplaint(customerId, complaintDetails);
 
-                await chatStateService.updateChatState(customerId, "main_menu");
-
-                shouldGoToMainMenu = true;
+                    liveChatService.sendToAdmins({ 
+                        type: "new complaint", 
+                        data: 
+                        { 
+                            customerId: customerId, 
+                            userEmail: user?.email, 
+                            details: complaintDetails, 
+                            timestamp: new Date().toISOString() 
+                        }
+                    });
+                    await botThink();
+                    complaintResultResponse = { 
+                        message: "Your compliant has been recieved successfully, we will contact you soon." 
+                    };
+                    await chatStateService.updateChatState(customerId, "main_menu");
+                    shouldGoToMainMenu = true;
+                }
             } catch (error) {
-
-                console.error("Error cannot save the complaint in database for user " + customerId + ":", error); 
+                console.error("Error processing complaint from chat:", error); 
                 complaintResultResponse = { 
-                    error: "Technical error occured while saving your complaint, please try again" 
-                };
+                    error: error.message || "A technical error occurred."
+                }; 
+                await chatStateService.updateChatState(customerId, "main_menu");
+                shouldGoToMainMenu = true;
             }
         }
+        
         if (complaintResultResponse) {
             ws.send(JSON.stringify(complaintResultResponse));
         }
@@ -287,12 +308,11 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                         options: ["1. I have a compliant", "2. Following an order", "3. Nominate a book"] 
                     }));
                 }
-            }, 500); 
+            }, 1200); 
         }
     }
 
-
-    // State: awaiting_book_nomination 
+    
     else if(currentState === "awaiting_book_nomination") {
 
         ws.send(JSON.stringify({ 
@@ -307,12 +327,10 @@ async function routeCustomerMessage(ws, customerId, message, currentState, userR
                     options: ["1. I have a compliant", "2. Following an order", "3. Nominate a book"] 
                 }));
             }
-        }, 500); 
+        }, 1200); 
     }
-    //State: live_chat_pending
+    
     else if (currentState === "live_chat_pending") {
-        // User sent a message while waiting for an admin
-
         ws.send(JSON.stringify({
             message: "Please wait while we connect you to an admin..."
         }));

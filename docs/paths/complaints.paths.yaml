@@ -226,6 +226,90 @@ paths:
                 statusCode: 404
                 message: "Complaint not found"
                 success: false
+  /api/complaints/user/create:
+    post:
+      summary: Submit a new complaint (User)
+      tags: [Complaints]
+      description: |
+        Allows a user to submit a new complaint regarding an order or a general issue.
+        Ensures the user does not already have an open complaint (status: new or inProgress).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                details:
+                  type: string
+                  description: The complaint details
+                orderId:
+                  type: string
+                  nullable: true
+                  description: The related order ID (optional)
+              required:
+                - details
+            example:
+              details: "The book was damaged when delivered"
+              orderId: "68fce2b67914864105e1625c"
+      responses:
+        "201":
+          description: Complaint submitted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Your complaint has been submitted successfully."
+                  data:
+                    type: object
+                    properties:
+                      complaint:
+                        $ref: "#/components/schemas/Complaint"
+        "400":
+          description: Bad Request (Missing details or open complaint exists)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                missingDetails:
+                  value:
+                    statusCode: 400
+                    message: "Complaint details are required"
+                    success: false
+                existingComplaint:
+                  value:
+                    statusCode: 400
+                    message: "You already have an open complaint (Status: new). Please wait for us to resolve it."
+                    success: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 401
+                message: "invalid token"
+                success: false
+        "404":
+          description: Order not found (if provided orderId doesn't belong to user)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                statusCode: 404
+                message: "Order not found"
+                success: false
 
   /api/complaints/user:
     get:

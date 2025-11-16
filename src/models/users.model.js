@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: { type: String, default: null },
   resetPasswordExpires: { type: Date, default: null },
   isSubscribedToNewsService: {type: Boolean, default: false},
+  newsletterUnsubscribeCount: { type: Number, default: 0 },
 
 }, { timestamps: true });
 

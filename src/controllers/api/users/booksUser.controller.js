@@ -41,6 +41,7 @@ export const getAllBooks = async (req, res) => {
           author: 1,
           category: 1,
           price: 1,
+          stock: 1,
           imagePath: 1,
           uploadedAt: 1,
           averageRating: 1,
