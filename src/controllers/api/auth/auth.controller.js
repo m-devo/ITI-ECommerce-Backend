@@ -7,6 +7,7 @@ import {
   sendDeviceVerificationEmail,
   sendPasswordResetEmail,
 } from "../../../utils/sendEmail.js";
+import 'dotenv/config';
 
 // get user profile
 const getUserProfile = async (req, res) => {

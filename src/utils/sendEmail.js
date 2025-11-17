@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import 'dotenv/config';
 
 export const sendVerificationEmail = async (email, token) => {
   const transporter = nodemailer.createTransport({

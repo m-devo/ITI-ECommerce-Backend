@@ -5,6 +5,7 @@ import { getIdString } from '../utils/id.util.js';
 import Book from '../models/bookSchema.js';
 import redisClient from '../../config/redis.js';
 import { deleteRedisCache } from '../utils/redis.utils.js';
+import 'dotenv/config';
 
 const getCartKey = (userId) => `cart:${getIdString(userId)}`;
 
