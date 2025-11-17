@@ -24,6 +24,7 @@ export function cleanText(text) {
 }
 
 export function containsBadWords(text) {
+  text = (typeof text === 'string') ? text : "";
   return leoProfanity.check(text) || profanity.contains(text);
 }
 

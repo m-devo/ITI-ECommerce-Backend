@@ -18,7 +18,7 @@ export function createRateLimiter() {
     return rateLimit({
         store: limiterStore,
         windowMs: 15 * 60 * 1000, // 15 m
-        max: 100,
+        max: 1000,
         message: 'Too many requests, please try again after 15 minutes.',
         keyGenerator: ipKeyGenerator,
         handler: rateLimitHandler,
