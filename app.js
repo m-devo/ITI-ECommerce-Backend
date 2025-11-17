@@ -53,24 +53,8 @@ startOrdersReconciliationCron();
 
 app.set("trust proxy", 1);
 
-const allowedOrigins = [
-  'http://localhost:4200',
-  process.env.FRONTEND_URL
-];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) !== -1 || origin === process.env.FRONTEND_URL) {
-      callback(null, true);
-    } else {
-      console.log('Blocked Origin:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+app.use(cors());
 
 const apiLimiter = createRateLimiter();
 app.use("/api", apiLimiter);
