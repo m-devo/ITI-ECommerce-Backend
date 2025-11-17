@@ -153,49 +153,55 @@ export async function fulfillOrder(orderId) {
     }
 
     order.status = 'paid';
-    await order.save();
+    const updatedOrder = await order.save();
 
-    sendEmailToQueue('confirmed', order.billingData.email, order);
+    const orderObject = updatedOrder.toObject();
+
+    sendEmailToQueue('confirmed', orderObject.billingData.email, orderObject);
 
     return order;
 }
 
 export async function cancelOrderAndRestock(orderId) {
+    let session;
+    try {
+        const order = await Order.findById(orderId);
 
-        let session;
-        try {
-
-            const order = await Order.findById(orderId);
+        if (order && order.status === 'pending') {
+            session = await mongoose.startSession();
             
-            if (order && order.status === 'pending') {
-                session = await mongoose.startSession();
 
-                await session.withTransaction(async () => { 
+            await session.withTransaction(async () => {
+                order.status = 'cancelled';
 
-                    order.status = 'cancelled';
+                for (const item of order.items) {
+                    await bookSchema.updateOne(
+                        { _id: item.bookId },
+                        { $inc: { stock: item.quantity } },
+                        { session }
+                    );
+                }
 
-                    for (const item of order.items) {
-                        
-                        await bookSchema.updateOne( 
-                            { _id: item.bookId }, 
-                            { $inc: { stock: item.quantity } }, 
-                            { session } 
-                        );
-                    }
+                await order.save({ session });
+            });
+            
 
-                    await order.save({session});
-                });
+            await session.endSession(); 
+            session = null; 
+
+            const orderObject = order.toObject();
+
+            if (orderObject.billingData && orderObject.billingData.email) {
+                sendEmailToQueue('cancelled', orderObject.billingData.email, orderObject);
             }
-
-            sendEmailToQueue('cancelled', order.billingData.email, order);
-        
-        } catch (error) {
-            throw new ApiError("Error processing failed payment: ", error); 
-        } finally {
-            if (session) {
-                session.endSession();
-            }        
+        } 
+    } catch (error) {
+        throw new ApiError("Error processing failed payment: " + error.message);
+    } finally {
+        if (session) {
+            await session.endSession();
         }
+    }
 }
 
 export async function preCheckoutOrder(userId) {
