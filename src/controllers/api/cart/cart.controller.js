@@ -17,11 +17,14 @@ export const CartController = {
         const cart = await CartService.updateBooksInCart(userId, books);
         res.status(200).json(new ApiResponse(200, cart, "Cart updated successfully"));
     }),
-
+    
     incrementItemQuantity: catchAsync(async (req, res) => {
         const userId = req.currentUser.id;
         const { bookId } = req.params;
-        const cart = await CartService.incrementItemQuantity(userId, bookId);
+        const { quantity } = req.body;
+
+        const amountToAdd = quantity ? parseInt(quantity) : 1;
+        const cart = await CartService.incrementItemQuantity(userId, bookId, amountToAdd);
         res.status(200).json(new ApiResponse(200, cart, "Item quantity incremented successfully"));
     }),
 

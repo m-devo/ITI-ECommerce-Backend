@@ -256,15 +256,17 @@ export const CartService = {
      * Increments the quantity of a book in the cart.
      * @param {string} userId - The user's ID.
      * @param {string} bookId - The book's ID.
+     * @param {number} quantity - The quantity to add (default is 1).
      * @returns {Promise<Object>} The updated populated cart.
      */
-    async incrementItemQuantity(userId, bookId) {
+    async incrementItemQuantity(userId, bookId, quantity = 1) {
         if (!userId || !bookId) {
             throw new ApiError(400, 'User ID and Book ID are required');
         }
+        quantity = parseInt(quantity); 
+        if (isNaN(quantity) || quantity <= 0) quantity = 1;
 
         const cartKey = getCartKey(userId);
-
         let populatedCart = await this.getPopulatedCart(userId, cartKey);
 
         // Fetch book
@@ -277,15 +279,15 @@ export const CartService = {
         const item = populatedCart.items.find(item => getIdString(item.book._id) === bookIdStr);
 
         if (!item) {
-            if (book.stock < 1) {
-                throw new ApiError(400, `Book is out of stock`);
-            }
-            populatedCart.items.push({ quantity: 1, book });
-        } else {
-            if (item.quantity + 1 > book.stock) {
+            if (book.stock < quantity) {
                 throw new ApiError(400, `Only ${book.stock} units of ${book.title} are available`);
             }
-            item.quantity += 1;
+            populatedCart.items.push({ quantity: quantity, book });
+        } else {
+            if (item.quantity + quantity > book.stock) {
+                throw new ApiError(400, `Only ${book.stock} units of ${book.title} are available`);
+            }
+            item.quantity += quantity;
         }
 
         // Update cache
@@ -308,7 +310,6 @@ export const CartService = {
 
         return populatedCart;
     },
-
     /**
      * Decrements the quantity of a book in the cart.
      * @param {string} userId - The user's ID.
