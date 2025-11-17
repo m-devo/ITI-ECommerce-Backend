@@ -27,6 +27,7 @@ services:
       - AWS_REGION=${AWS_REGION}
       - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
       - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
+      - FRONTEND_URL=${FRONTEND_URL}
     depends_on:
       rabbitmq:
         condition: service_healthy
