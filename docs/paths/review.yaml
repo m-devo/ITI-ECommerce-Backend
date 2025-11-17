@@ -106,21 +106,28 @@ paths:
           description: Review ID
       requestBody:
         required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  example: 4
+                comment:
+                  type: string
+                  example: "Updated review text"
+                audio:
+                  type: string
+                  format: binary
+                  description: Optional audio file for transcription
+            encoding:
               rating:
-                type: integer
-                example: 4
+                contentType: text/plain
               comment:
-                type: string
-                example: "Updated review text"
+                contentType: text/plain
               audio:
-                type: string
-                format: binary
-                description: "Optional audio file for transcription"
+                contentType: audio/mpeg
       responses:
         "200":
           description: Review updated successfully
@@ -128,6 +135,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Review"
+        "403":
+          description: Forbidden – User cannot edit others' reviews
+        "404":
+          description: Review not found
+        "500":
+          description: Server error
 
   /api/reviews/delete/{id}:
     delete:

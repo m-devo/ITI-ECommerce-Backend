@@ -39,7 +39,7 @@ export const CartService = {
             cart = await this.createCartForUser(userId);
         }
 
-        // Synchronize cart stock like update methods
+        // Synchronize cart
         const synchronizedCart = await this.synchronizeCartStock(cart, userId);
 
         try {
@@ -128,6 +128,37 @@ export const CartService = {
         return populatedCart;
     },
 
+    async getPopulatedCart(userId, cartKey) {
+        let populatedCart;
+        try {
+            const cached = await redisClient.get(cartKey);
+            if (cached) {
+                populatedCart = JSON.parse(cached);
+            } else {
+                let cart = await Cart.findOne({ userId });
+                if (!cart) {
+                    cart = await this.createCartForUser(userId);
+                }
+                populatedCart = await this.populateCart(cart);
+                try {
+                    await redisClient.set(cartKey, JSON.stringify(populatedCart), {
+                        EX: CART_CACHE_DURATION,
+                    });
+                } catch (err) {
+                    console.error('Redis SET error:', err);
+                }
+            }
+        } catch (err) {
+            console.error('Redis GET error:', err);
+            let cart = await Cart.findOne({ userId });
+            if (!cart) {
+                cart = await this.createCartForUser(userId);
+            }
+            populatedCart = await this.populateCart(cart);
+        }
+        return populatedCart;
+    },
+
     /**
      * Updates multiple books in the user's cart.
      * @param {string} userId - The user's ID.
@@ -135,94 +166,63 @@ export const CartService = {
      * @returns {Promise<Object>} The updated populated cart.
      */
     async updateBooksInCart(userId, bookUpdates) {
-        // Input validation
-        this.validateUpdateBooksInput(userId, bookUpdates);
 
-        let cart = await Cart.findOne({ userId });
-        if (!cart) {
-            cart = await this.createCartForUser(userId);
-        }
+        const cartKey = getCartKey(userId);
+
+        let populatedCart = await this.getPopulatedCart(userId, cartKey);
+
 
         // Bulk fetch books for validation
         const bookIds = bookUpdates.map(update => update.bookId);
-        const books = await Book.find({ _id: { $in: bookIds } });
+        const books = await Book.find({ _id: { $in: bookIds } }).select('-bookPath');
         const booksMap = new Map(books.map(book => [book._id.toString(), book]));
 
-        // Create a map for fast cart item lookup
-        const cartItemsMap = new Map(
-            cart.items.map(item => [getIdString(item.bookId), item])
-        );
-
-        // Process each update
+        // Process updates
         const processedUpdates = this.processBookUpdates(bookUpdates, booksMap);
 
-        // Apply updates to cart items
+        // Update populatedCart.items
+        // Create a map for fast lookup
+        const cartItemsMap = new Map(
+            populatedCart.items.map(item => [getIdString(item.book._id), item])
+        );
+
+        // Apply updates
         for (const { bookId, quantity } of processedUpdates) {
             const bookIdStr = getIdString(bookId);
             const existingItem = cartItemsMap.get(bookIdStr);
 
             if (quantity === 0) {
                 if (existingItem) {
-                    cart.items.splice(cart.items.indexOf(existingItem), 1);
+                    populatedCart.items.splice(populatedCart.items.indexOf(existingItem), 1);
                 }
             } else {
                 if (existingItem) {
                     existingItem.quantity = quantity;
                 } else {
-                    cart.items.push({ bookId, quantity });
+                    populatedCart.items.push({ quantity, book: booksMap.get(bookIdStr) });
                 }
             }
         }
 
-        // Save the cart and update cache
-        await cart.save();
-        const populatedCart = await this.populateCart(cart);
+        // Update cache
         try {
-            await redisClient.set(getCartKey(userId), JSON.stringify(populatedCart), {
+            await redisClient.set(cartKey, JSON.stringify(populatedCart), {
                 EX: CART_CACHE_DURATION,
             });
         } catch (err) {
             console.error('Redis SET error:', err);
         }
 
-        // Synchronize stock and get populated cart
-        const synchronizedCart = await this.synchronizeCartStock(cart, userId);
+        // Async save to DB
+        const cartDoc = {
+            _id: populatedCart._id,
+            userId: populatedCart.userId,
+            items: populatedCart.items.map(item => ({ bookId: item.book._id, quantity: item.quantity }))
+        };
+        const cart = new Cart(cartDoc);
+        cart.save().catch(err => console.error('DB save error:', err));
 
-        return synchronizedCart;
-    },
-
-    /**
-     * Validates input for updateBooksInCart.
-     * @param {string} userId - The user's ID.
-     * @param {Array} bookUpdates - Array of { bookId, quantity }.
-     * @throws {ApiError} If validation fails.
-     */
-    validateUpdateBooksInput(userId, bookUpdates) {
-        if (!userId) {
-            throw new ApiError(400, 'User ID is required');
-        }
-        if (!Array.isArray(bookUpdates) || bookUpdates.length === 0) {
-            throw new ApiError(400, 'Book updates array is required and cannot be empty');
-        }
-
-        const seenBookIds = new Set();
-        for (const update of bookUpdates) {
-            if (!update || typeof update !== 'object') {
-                throw new ApiError(400, 'Each book update must be an object');
-            }
-            if (!update.bookId) {
-                throw new ApiError(400, 'Book ID is required for each update');
-            }
-            if (!Number.isInteger(update.quantity) || update.quantity < 0) {
-                throw new ApiError(400, 'Quantity must be a non-negative integer');
-            }
-
-            const bookIdStr = getIdString(update.bookId);
-            if (seenBookIds.has(bookIdStr)) {
-                throw new ApiError(400, 'Duplicate book IDs are not allowed');
-            }
-            seenBookIds.add(bookIdStr);
-        }
+        return populatedCart;
     },
 
     /**
@@ -263,25 +263,24 @@ export const CartService = {
             throw new ApiError(400, 'User ID and Book ID are required');
         }
 
-        let cart = await Cart.findOne({ userId });
-        if (!cart) {
-            cart = await this.createCartForUser(userId);
-        }
+        const cartKey = getCartKey(userId);
 
-        const bookIdStr = getIdString(bookId);
-        const item = cart.items.find(item => getIdString(item.bookId) === bookIdStr);
+        let populatedCart = await this.getPopulatedCart(userId, cartKey);
 
-        // Fetch book once and validate
+        // Fetch book
         const book = await Book.findById(bookId);
         if (!book) {
             throw new ApiError(404, 'Book not found');
         }
 
+        const bookIdStr = getIdString(bookId);
+        const item = populatedCart.items.find(item => getIdString(item.book._id) === bookIdStr);
+
         if (!item) {
             if (book.stock < 1) {
                 throw new ApiError(400, `Book is out of stock`);
             }
-            cart.items.push({ bookId, quantity: 1 });
+            populatedCart.items.push({ quantity: 1, book });
         } else {
             if (item.quantity + 1 > book.stock) {
                 throw new ApiError(400, `Only ${book.stock} units of ${book.title} are available`);
@@ -289,16 +288,24 @@ export const CartService = {
             item.quantity += 1;
         }
 
-        await cart.save();
-        const populatedCart = await this.populateCart(cart);
-        // Update cache with new data
+        // Update cache
         try {
-            await redisClient.set(getCartKey(userId), JSON.stringify(populatedCart), {
+            await redisClient.set(cartKey, JSON.stringify(populatedCart), {
                 EX: CART_CACHE_DURATION,
             });
         } catch (err) {
             console.error('Redis SET error:', err);
         }
+
+        // Async save
+        const cartDoc = {
+            _id: populatedCart._id,
+            userId: populatedCart.userId,
+            items: populatedCart.items.map(item => ({ bookId: item.book._id, quantity: item.quantity }))
+        };
+        const cart = new Cart(cartDoc);
+        cart.save().catch(err => console.error('DB save error:', err));
+
         return populatedCart;
     },
 
@@ -313,13 +320,13 @@ export const CartService = {
             throw new ApiError(400, 'User ID and Book ID are required');
         }
 
-        const cart = await Cart.findOne({ userId });
-        if (!cart) {
-            throw new ApiError(404, 'Cart not found');
-        }
+        const cartKey = getCartKey(userId);
+
+        let populatedCart = await this.getPopulatedCart(userId, cartKey);
+
 
         const bookIdStr = getIdString(bookId);
-        const item = cart.items.find(item => getIdString(item.bookId) === bookIdStr);
+        const item = populatedCart.items.find(item => getIdString(item.book._id) === bookIdStr);
 
         if (!item) {
             throw new ApiError(404, 'Item not found in cart');
@@ -328,19 +335,27 @@ export const CartService = {
         item.quantity -= 1;
 
         if (item.quantity < 1) {
-            cart.items = cart.items.filter(i => getIdString(i.bookId) !== bookIdStr);
+            populatedCart.items = populatedCart.items.filter(i => getIdString(i.book._id) !== bookIdStr);
         }
 
-        await cart.save();
-        const populatedCart = await this.populateCart(cart);
-        // Update cache with new data
+        // Update cache
         try {
-            await redisClient.set(getCartKey(userId), JSON.stringify(populatedCart), {
+            await redisClient.set(cartKey, JSON.stringify(populatedCart), {
                 EX: CART_CACHE_DURATION,
             });
         } catch (err) {
             console.error('Redis SET error:', err);
         }
+
+        // Async save
+        const cartDoc = {
+            _id: populatedCart._id,
+            userId: populatedCart.userId,
+            items: populatedCart.items.map(item => ({ bookId: item.book._id, quantity: item.quantity }))
+        };
+        const cart = new Cart(cartDoc);
+        cart.save().catch(err => console.error('DB save error:', err));
+
         return populatedCart;
     },
 
@@ -355,24 +370,32 @@ export const CartService = {
             throw new ApiError(400, 'User ID and Book ID are required');
         }
 
-        const cart = await Cart.findOne({ userId });
-        if (!cart) {
-            throw new ApiError(404, 'Cart not found');
-        }
+        const cartKey = getCartKey(userId);
+
+        let populatedCart = await this.getPopulatedCart(userId, cartKey);
+
 
         const bookIdStr = getIdString(bookId);
-        cart.items = cart.items.filter(item => getIdString(item.bookId) !== bookIdStr);
+        populatedCart.items = populatedCart.items.filter(item => getIdString(item.book._id) !== bookIdStr);
 
-        await cart.save();
-        const populatedCart = await this.populateCart(cart);
-        // Update cache with new data
+        // Update cache
         try {
-            await redisClient.set(getCartKey(userId), JSON.stringify(populatedCart), {
+            await redisClient.set(cartKey, JSON.stringify(populatedCart), {
                 EX: CART_CACHE_DURATION,
             });
         } catch (err) {
             console.error('Redis SET error:', err);
         }
+
+        // Async save
+        const cartDoc = {
+            _id: populatedCart._id,
+            userId: populatedCart.userId,
+            items: populatedCart.items.map(item => ({ bookId: item.book._id, quantity: item.quantity }))
+        };
+        const cart = new Cart(cartDoc);
+        cart.save().catch(err => console.error('DB save error:', err));
+
         return populatedCart;
     },
 
@@ -386,23 +409,32 @@ export const CartService = {
             throw new ApiError(400, 'User ID is required');
         }
 
-        const cart = await Cart.findOne({ userId });
+        const cartKey = getCartKey(userId);
 
-        if (!cart) {
-            throw new ApiError(404, 'Cart not found');
-        }
+        let populatedCart = await this.getPopulatedCart(userId, cartKey);
 
-        cart.items = [];
-        await cart.save();
-        // Update cache with cleared cart
+
+        populatedCart.items = [];
+
+        // Update cache
         try {
-            await redisClient.set(getCartKey(userId), JSON.stringify(cart), {
+            await redisClient.set(cartKey, JSON.stringify(populatedCart), {
                 EX: CART_CACHE_DURATION,
             });
         } catch (err) {
             console.error('Redis SET error:', err);
         }
-        return cart;
+
+        // Async save
+        const cartDoc = {
+            _id: populatedCart._id,
+            userId: populatedCart.userId,
+            items: []
+        };
+        const cart = new Cart(cartDoc);
+        cart.save().catch(err => console.error('DB save error:', err));
+
+        return populatedCart;
     },
 
     /**
@@ -435,7 +467,7 @@ export const CartService = {
         if (!cart) return null;
 
         if (cart.populate) {
-            await cart.populate('items.bookId');
+            await cart.populate('items.bookId', '-bookPath');
         }
 
         let populatedCart;
@@ -535,4 +567,3 @@ export const CartService = {
         }
     },
 };
-
