@@ -4,7 +4,7 @@ import ApiError from "../../../utils/ApiError.js"
 import ApiResponse from "../../../utils/ApiResponse.js"
 import catchAsync from "../../../utils/catchAsync.js"
 import mongoose from "mongoose";
-import SummarizerManager from "node-summarizer";
+// import SummarizerManager from "node-summarizer";
 export const getAllBooks = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
