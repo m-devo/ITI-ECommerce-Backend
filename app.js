@@ -36,7 +36,7 @@ import reviewRoutes from "./src/routes/review.routes.js";
 import startOrdersReconciliationCron from "./src/jobs/order-reconciliation.js";
 import { consumeEmailQueue } from "./src/utils/orderEmailQueue.js";
 import { fileURLToPath } from "url";
-
+import cors from "cors"
 /***************Web Socket*************/
 import http from "http";
 import chatService from "./src/chatbot/chat.service.js";
@@ -47,21 +47,20 @@ const PORT = process.env.PORT || 4000;
 connectDB();
 redisConnection(); // opening redis connection
 
-// Connect to RabbitMQ (optional in development)
-try {
-  await connectRabbitMQ();
-  await consumeEmailQueue(); // start email consumer only if RabbitMQ is available
-} catch (error) {
-  console.warn("⚠️  Skipping RabbitMQ features due to connection failure");
-}
+await connectRabbitMQ();
+await consumeEmailQueue();
 
 startOrdersReconciliationCron();
 
 app.set("trust proxy", 1);
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:4200',
+  credentials: true
+}));
+
 const apiLimiter = createRateLimiter();
 app.use("/api", apiLimiter);
-
-app.use(cors());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

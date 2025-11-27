@@ -6,17 +6,16 @@ import restrictTo from '../middlewares/restrictTo.middleware.js';
 import protect  from "../middlewares/protect.middleware.js";
 const router = Router();
 
-router.get('/allusers',protect,restrictTo('admin') ,UserController.getAllUsers);
+router.get('/allusers' ,protect,restrictTo('admin'),
+UserController.getAllUsers);
 
 
 router.get(
-    '/:id',
-    protect,restrictTo('admin'),
+    '/:id',protect,restrictTo('admin'),
     UserController.getUserById
 );
 router.patch(
-    '/update/:id',
-    protect,restrictTo('admin'),
+    '/update/:id',protect,restrictTo('admin'),
     UserController.updateUser
 )
 router.delete(
