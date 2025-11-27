@@ -15,7 +15,7 @@ const getUserProfile = async (req, res) => {
 
 // register a new user
 const registerUser = async (req, res) => {
-  const { firstName, lastName, email, password, role } = req.body;
+  const { firstName, lastName, email, password } = req.body;
   // if the user already exists check it
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -31,13 +31,12 @@ const registerUser = async (req, res) => {
   const verificationToken = crypto.randomBytes(32).toString("hex");
   const expires = Date.now() + 60 * 60 * 1000;
 
-  // create new user
   const newUser = new User({
     firstName,
     lastName,
     email,
     password: hashedPassword,
-    role: role || "user",
+    role: "user",
     verificationToken,
     verificationTokenExpires: expires,
     isVerified: false,
